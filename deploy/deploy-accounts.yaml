@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gargantua-api
+---
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: gargantua-controllers
+---
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: gargantua-shell
+---    
