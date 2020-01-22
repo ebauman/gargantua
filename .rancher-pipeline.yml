@@ -17,6 +17,8 @@ stages:
 - name: Deploy
   steps:
   - applyYamlConfig:
+      path: ./deploy/deploy-accounts.yaml
+  - applyYamlConfig:
       path: ./deploy/deploy-api.yaml
   - applyYamlConfig:
       path: ./deploy/deploy-controllers.yaml
