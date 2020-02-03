@@ -27,14 +27,6 @@ type VirtualMachine struct {
 	Status            VirtualMachineStatus `json:"status,omitempty"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type VirtualMachineList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []VirtualMachine `json:"items"`
-}
-
 type VirtualMachineSpec struct {
 	Id                       string `json:"id"`
 	VirtualMachineTemplateId string `json:"vm_template_id"`
@@ -66,14 +58,6 @@ type VirtualMachineClaim struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              VirtualMachineClaimSpec   `json:"spec"`
 	Status            VirtualMachineClaimStatus `json:"status,omitempty"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type VirtualMachineClaimList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []VirtualMachineClaim `json:"items"`
 }
 
 type VirtualMachineClaimSpec struct {
@@ -110,14 +94,6 @@ type VirtualMachineTemplate struct {
 	Spec              VirtualMachineTemplateSpec `json:"spec"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type VirtualMachineTemplateList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []VirtualMachineTemplate `json:"items"`
-}
-
 // VM type is a genercized collection of information about a VM. this includes things like
 // cpu, ram, disk, etc.
 type VirtualMachineTemplateSpec struct {
@@ -137,14 +113,6 @@ type Environment struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              EnvironmentSpec   `json:"spec"`
 	Status            EnvironmentStatus `json:"status"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type EnvironmentList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []Environment `json:"items"`
 }
 
 // environment is to be like
@@ -209,14 +177,6 @@ type VirtualMachineProvision struct {
 	TFControllerCM     string `json:"tfc_cm"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type VirtualMachineSetList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []VirtualMachineSet `json:"items"`
-}
-
 // +genclient
 // +genclient:noStatus
 // +genclient:nonNamespaced
@@ -226,14 +186,6 @@ type Scenario struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              ScenarioSpec `json:"spec"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type ScenarioList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []Scenario `json:"items"`
 }
 
 type ScenarioSpec struct {
@@ -261,14 +213,6 @@ type ScenarioSession struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              ScenarioSessionSpec   `json:"spec"`
 	Status            ScenarioSessionStatus `json:"status"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type ScenarioSessionList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []ScenarioSession `json:"items"`
 }
 
 type ScenarioSessionSpec struct {
@@ -299,14 +243,6 @@ type AccessCode struct {
 	Spec              AccessCodeSpec `json:"spec"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type AccessCodeList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []AccessCode `json:"items"`
-}
-
 type AccessCodeSpec struct {
 	Code                string   `json:"code"`
 	Description         string   `json:"description"`
@@ -328,14 +264,6 @@ type User struct {
 	Spec              UserSpec `json:"spec"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type UserList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []User `json:"items"`
-}
-
 type UserSpec struct {
 	Id          string   `json:"id"`
 	Email       string   `json:"email"`
@@ -353,14 +281,6 @@ type ScheduledEvent struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              ScheduledEventSpec   `json:"spec"`
 	Status            ScheduledEventStatus `json:"status"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type ScheduledEventList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []ScheduledEvent `json:"items"`
 }
 
 type ScheduledEventSpec struct {
@@ -396,14 +316,6 @@ type DynamicBindConfiguration struct {
 	Spec              DynamicBindConfigurationSpec `json:"spec"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type DynamicBindConfigurationList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []DynamicBindConfiguration `json:"items"`
-}
-
 // DynamicBindConfiguration is very similar to a VirtualMachineSet. They should be created side-by-side
 // but there is no guarantee the environments will have adequate capacity when creating them.
 // The DynamicBindController will watch for VM Objects that get created and will always check to make sure
@@ -428,14 +340,6 @@ type DynamicBindRequest struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	Spec              DynamicBindRequestSpec   `json:"spec"`
 	Status            DynamicBindRequestStatus `json:"status"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-type DynamicBindRequestList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []DynamicBindRequest `json:"items"`
 }
 
 type DynamicBindRequestSpec struct {

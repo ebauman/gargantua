@@ -12,11 +12,11 @@ require (
 	github.com/gorilla/websocket v1.4.0
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rancher/terraform-controller v0.0.10-alpha1
-	github.com/rancher/wrangler v0.1.0
+	github.com/rancher/wrangler v0.4.0
 	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876
-	k8s.io/api v0.15.8
-	k8s.io/apimachinery v0.15.8
+	k8s.io/api v0.17.0
+	k8s.io/apimachinery v0.17.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/code-generator v0.15.8
+	k8s.io/code-generator v0.17.0
 	k8s.io/klog v1.0.0
 )

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Rancher Labs, Inc.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,10 +21,15 @@ limitations under the License.
 package v1
 
 import (
-	terraformcontroller "github.com/rancher/terraform-controller/pkg/apis/terraformcontroller.cattle.io"
+	terraformcontroller "github.com/hobbyfarm/gargantua/pkg/apis/terraformcontroller.cattle.io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+)
+
+var (
+	ExecutionResourceName = "executions"
+	StateResourceName     = "states"
 )
 
 // SchemeGroupVersion is group version used to register these objects
@@ -50,8 +55,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Execution{},
 		&ExecutionList{},
-		&Module{},
-		&ModuleList{},
 		&State{},
 		&StateList{},
 	)
