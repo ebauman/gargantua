@@ -109,7 +109,23 @@ func (acc AccessCodeClient) GetScenarioIds(code string) ([]string, error) {
 	return accessCode.Spec.Scenarios, nil
 }
 
-func (acc AccessCodeClient) GetClosestAccessCodeForScenario(userID string, scenario string) (string, error) {
+func (acc AccessCodeClient) GetCourseIds(code string) ([]string, error) {
+	var ids []string
+
+	if len(code) == 0 {
+		return ids, fmt.Errorf("code was empty")
+	}
+
+	accessCode, err := acc.GetAccessCode(code, false)
+
+	if err != nil {
+		return ids, fmt.Errorf("error finding access code %s: %v", code, err)
+	}
+
+	return accessCode.Spec.Courses, nil
+}
+
+func (acc AccessCodeClient) GetClosestAccessCode(userID string, scenario string) (string, error) {
 	// basically let's get all of the access codes, sort them by expiration, and start going down the list looking for access codes.
 
 	user, err := acc.hfClientSet.HobbyfarmV1().Users().Get(userID, metav1.GetOptions{}) // @TODO: FIX THIS TO NOT DIRECTLY CALL USER
@@ -144,7 +160,13 @@ func (acc AccessCodeClient) GetClosestAccessCodeForScenario(userID string, scena
 		return iExp.Before(jExp)
 	})
 
-	glog.V(6).Infof("Access code list was %v", accessCodes)
+	if glog.V(6) {
+		var accessCodesList []string
+		for _, ac := range accessCodes {
+			accessCodesList = append(accessCodesList, ac.Spec.Code)
+		}
+		glog.Infof("Access code list was %v", accessCodesList)
+	}
 
 	return accessCodes[0].Name, nil
 }
