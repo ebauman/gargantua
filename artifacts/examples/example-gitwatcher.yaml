@@ -1,0 +1,9 @@
+apiVersion: gitwatcher.cattle.io/v1
+kind: GitWatcher
+metadata:
+  name: ebaumanriodemo
+  namespace: hobbyfarm
+spec:
+  repositoryUrl: "https://github.com/ebauman/rio-demo-code.git"
+  provider: "polling"
+  branch: "master"

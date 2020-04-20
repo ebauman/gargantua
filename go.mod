@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/mux v1.7.1
 	github.com/gorilla/websocket v1.4.0
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/rancher/gitwatcher v0.4.5
 	github.com/rancher/terraform-controller v0.0.10-alpha1
 	github.com/rancher/wrangler v0.1.0
 	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876

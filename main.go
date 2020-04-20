@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"github.com/rancher/gitwatcher/pkg/types"
 	"os"
 
 	"github.com/golang/glog"
@@ -38,8 +40,11 @@ import (
 	"github.com/hobbyfarm/gargantua/pkg/vmclaimserver"
 	"github.com/hobbyfarm/gargantua/pkg/vmclient"
 	"github.com/hobbyfarm/gargantua/pkg/vmserver"
+	wranglerSignals "github.com/rancher/wrangler/pkg/signals"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	gitwatcher "github.com/rancher/gitwatcher/pkg/controllers/webhook"
 
 	//"k8s.io/client-go/tools/cache"
 	"net/http"
@@ -255,6 +260,15 @@ func main() {
 			glog.Fatal(err)
 		}
 
+		// setup wrangler context
+		wranglerSignalsContext := wranglerSignals.SetupSignalHandler(context.Background())
+		_, wranglerClusterContext := types.BuildContext(wranglerSignalsContext, "hobbyfarm", cfg)
+
+		err = gitwatcher.Register(wranglerSignalsContext, wranglerClusterContext)
+		if err != nil {
+			glog.Fatal(err)
+		}
+
 		wg.Add(6)
 		/*
 			go func() {
@@ -290,6 +304,11 @@ func main() {
 		go func() {
 			defer wg.Done()
 			dynamicBindController.Run(stopCh)
+		}()
+
+		go func() {
+			defer wg.Done()
+			wranglerClusterContext.Start(wranglerSignalsContext)
 		}()
 	}
 
