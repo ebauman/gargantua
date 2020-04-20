@@ -13,7 +13,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rancher/gitwatcher v0.4.5
 	github.com/rancher/terraform-controller v0.0.10-alpha1
-	github.com/rancher/wrangler v0.1.0
+	github.com/rancher/wrangler v0.2.1-0.20191015042916-f2a6ecca4f20
 	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876
 	k8s.io/api v0.15.8
 	k8s.io/apimachinery v0.15.8
