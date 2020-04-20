@@ -20,6 +20,8 @@ package v1
 
 type AccessCodeExpansion interface{}
 
+type ContentRepositoryExpansion interface{}
+
 type CourseExpansion interface{}
 
 type DynamicBindConfigurationExpansion interface{}

@@ -484,3 +484,30 @@ type DynamicBindRequestStatus struct {
 	DynamicBindConfigurationId string            `json:"dynamic_bind_configuration_id"`
 	VirtualMachineIds          map[string]string `json:"virtual_machines_id"`
 }
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type ContentRepository struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+}
+
+type ContentRepositorySpec struct {
+	Enabled          bool   `json:"enabled"`
+	RepositoryURL    string `json:"repositoryUrl"`
+	Branch           string `json:"branch"`
+	CoursesEnabled   bool   `json:"coursesEnabled"`
+	ScenariosEnabled bool   `json:"scenariosEnabled"`
+}
+
+type ContentRepositoryStatus struct {
+	LastSynced string `json:"lastSynced"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type ContentRepositoryList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []ContentRepository `json:"items"`
+}

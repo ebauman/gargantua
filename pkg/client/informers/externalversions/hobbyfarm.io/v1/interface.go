@@ -26,6 +26,8 @@ import (
 type Interface interface {
 	// AccessCodes returns a AccessCodeInformer.
 	AccessCodes() AccessCodeInformer
+	// ContentRepositories returns a ContentRepositoryInformer.
+	ContentRepositories() ContentRepositoryInformer
 	// Courses returns a CourseInformer.
 	Courses() CourseInformer
 	// DynamicBindConfigurations returns a DynamicBindConfigurationInformer.
@@ -66,6 +68,11 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // AccessCodes returns a AccessCodeInformer.
 func (v *version) AccessCodes() AccessCodeInformer {
 	return &accessCodeInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// ContentRepositories returns a ContentRepositoryInformer.
+func (v *version) ContentRepositories() ContentRepositoryInformer {
+	return &contentRepositoryInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Courses returns a CourseInformer.

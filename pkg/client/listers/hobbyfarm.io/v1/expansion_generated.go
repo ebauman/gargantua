@@ -22,6 +22,10 @@ package v1
 // AccessCodeLister.
 type AccessCodeListerExpansion interface{}
 
+// ContentRepositoryListerExpansion allows custom methods to be added to
+// ContentRepositoryLister.
+type ContentRepositoryListerExpansion interface{}
+
 // CourseListerExpansion allows custom methods to be added to
 // CourseLister.
 type CourseListerExpansion interface{}
