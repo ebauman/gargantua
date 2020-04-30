@@ -1,22 +1,31 @@
 package contentrepositorycontroller
 
 import (
+	"crypto/sha256"
+	"encoding/base32"
 	"fmt"
 	"github.com/golang/glog"
+	contentRepov1 "github.com/hobbyfarm/gargantua/pkg/apis/hobbyfarm.io/v1"
 	hfClientset "github.com/hobbyfarm/gargantua/pkg/client/clientset/versioned"
-	hfListers "github.com/hobbyfarm/gargantua/pkg/client/listers/hobbyfarm.io/v1"
 	hfInformers "github.com/hobbyfarm/gargantua/pkg/client/informers/externalversions"
-	gwClientset "github.com/rancher/gitwatcher/pkg/generated/clientset/versioned/"
+	hfListers "github.com/hobbyfarm/gargantua/pkg/client/listers/hobbyfarm.io/v1"
+	"github.com/rancher/gitwatcher/pkg/apis/gitwatcher.cattle.io/v1"
+	gwClientset "github.com/rancher/gitwatcher/pkg/generated/clientset/versioned"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sort"
+	"strings"
 	"time"
 )
 
 const (
 	ContentRepositoryLabel = "label.hobbyfarm.io/contentrepository"
+	ContentRepositoryVersionLabel = "label.hobbyfarm.io/contentrepositoryversion"
+	Namespace = "hobbyfarm" // probably variable this out somehow in the future
 )
 
 type ContentRepositoryController struct {
@@ -52,6 +61,21 @@ func NewContentRepositoryController(hfClientSet *hfClientset.Clientset,
 	}, time.Second*30)
 
 	return &crc, nil
+}
+
+func (crc *ContentRepositoryController) Run(stopCh <-chan struct{}) error {
+	defer crc.crWorkqueue.ShutDown()
+
+	glog.V(4).Infof("starting contentrepository controller")
+	glog.Info("waiting for informer caches to sync")
+	if ok := cache.WaitForCacheSync(stopCh, crc.crSynced); !ok {
+		return fmt.Errorf("failed to wait for contentrepository cache to sync")
+	}
+	glog.Info("starting contentrepository controller workers")
+	go wait.Until(crc.runCrWorker, time.Second, stopCh)
+	glog.Info("started contentrepository controller workers")
+	<-stopCh
+	return nil
 }
 
 func (crc *ContentRepositoryController) enqueueCR(obj interface{}) {
@@ -146,7 +170,7 @@ func (crc *ContentRepositoryController) processNextRepository() bool {
 func (crc *ContentRepositoryController) reconcileContentRepository(crId string) error {
 	namespace, name, err := cache.SplitMetaNamespaceKey(crId)
 	if err != nil {
-		return fmt.Errorf("Invalid resource key: %s", crId)
+		return fmt.Errorf("invalid resource key: %s", crId)
 	}
 
 
@@ -159,7 +183,7 @@ func (crc *ContentRepositoryController) reconcileContentRepository(crId string) 
 			err = crc.processRemoval(namespace, name)
 
 			if err != nil {
-				return fmt.Errorf("Error while removing ContentRepository: %v", err)
+				return fmt.Errorf("error while removing ContentRepository: %v", err)
 			}
 			return nil // we have handled the deletion, so return nil
 		}
@@ -167,8 +191,59 @@ func (crc *ContentRepositoryController) reconcileContentRepository(crId string) 
 		return err // failing the errors.IsNotFound check means that this isn't an "object doesn't exist" error, so return it
 	}
 
-	// TODO - At this point we have written the delete logic.
-	// Next, we need to implement creation and update logic
+	gwList, err := crc.gwClientset.GitwatcherV1().GitWatchers(Namespace).List(metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", ContentRepositoryLabel, crId), // this sucks, you _should_ be able to query for ownership but you can't
+			})
+	if err != nil {
+		return fmt.Errorf("error retrieving GitWatchers for ContentRepository %s: %v", crId, err)
+	}
+
+	if len(gwList.Items) < 1 {
+		// there are no gitwatchers associated with this contentrepo, so create one
+		gw := v1.GitWatcher{}
+		setVals(&gw, contentRepo)
+
+		_, err = crc.gwClientset.GitwatcherV1().GitWatchers(Namespace).Create(&gw)
+		if err != nil {
+			return fmt.Errorf("error while creating GitWatcher: %v", err)
+		}
+	}
+
+	if len(gwList.Items) == 1 {
+		gw := gwList.Items[0]
+
+		if contentRepo.ResourceVersion == gw.Labels[ContentRepositoryVersionLabel] {
+			return nil
+		}
+
+		// the GitWatcher is out of sync with the latest version of the ContentRepository
+		setVals(&gw, contentRepo)
+
+		_, err := crc.gwClientset.GitwatcherV1().GitWatchers(Namespace).Update(&gw)
+		if err != nil {
+			return fmt.Errorf("error while updating GitWatcher: %v", err)
+		}
+	}
+
+	if len(gwList.Items) > 1 {
+		// there are too many gitwatchers. remove some.
+		// deterministic: always keep the oldest one as it was presumably first
+		// is this reasonable logic? I don't know but we're doing it
+		sort.Slice(gwList.Items, func(i, j int) bool {
+			return gwList.Items[i].CreationTimestamp.Unix() < gwList.Items[j].CreationTimestamp.Unix()
+		})
+
+		for _, gw := range gwList.Items[1:] {
+			err = crc.gwClientset.GitwatcherV1().GitWatchers(Namespace).Delete(gw.Name, &metav1.DeleteOptions{})
+			if err != nil {
+				return fmt.Errorf("error while removing superfluous GitWatchers: %v", err)
+			}
+		}
+
+		return nil
+	}
+
+	return nil
 }
 
 func (crc *ContentRepositoryController) processRemoval(namespace string, name string) error {
@@ -180,7 +255,7 @@ func (crc *ContentRepositoryController) processRemoval(namespace string, name st
 	// first, look up all the gitwatchers
 	gwList, err := crc.gwClientset.GitwatcherV1().GitWatchers(namespace).List(metav1.ListOptions{LabelSelector: label})
 	if err != nil {
-		return fmt.Errorf("Error listing GitWatchers: %v", err)
+		return fmt.Errorf("error listing GitWatchers: %v", err)
 	}
 
 	if len(gwList.Items) == 0 {
@@ -195,10 +270,40 @@ func (crc *ContentRepositoryController) processRemoval(namespace string, name st
 	for _, gw := range gwList.Items {
 		err = crc.gwClientset.GitwatcherV1().GitWatchers(namespace).Delete(gw.Name, &metav1.DeleteOptions{PropagationPolicy: &deletionPolicy})
 		if err != nil {
-			return fmt.Errorf("Error deleting GitWatcher %s: %v", gw.Name, err)
+			return fmt.Errorf("error deleting GitWatcher %s: %v", gw.Name, err)
 		}
 	}
 
 	// If all gitwatchers have been deleted, return happily!
 	return nil
+}
+
+func makeName() string {
+	hasher := sha256.New()
+	hasher.Write([]byte(time.Now().String())) // gross
+	sha := base32.StdEncoding.WithPadding(-1).EncodeToString(hasher.Sum(nil))[:8]
+	return strings.ToLower(sha)
+}
+
+func setVals(gw *v1.GitWatcher, cr *contentRepov1.ContentRepository) {
+	gw.Name = fmt.Sprintf("gw-%s-cr-%s", makeName(), cr.Name)
+	gw.Spec.RepositoryURL = cr.Spec.RepositoryURL
+	gw.Spec.Enabled = cr.Spec.Enabled
+	gw.Spec.Branch = cr.Spec.Branch
+	gw.Spec.Provider = "polling" // we should implement webhook, etc. in the future
+	var tru = true // hack to get ptr to a bool
+	ownerRef := metav1.OwnerReference{
+		APIVersion: cr.APIVersion,
+		Kind: cr.Kind,
+		Name: cr.Name,
+		Controller: &tru, // yuck
+		UID: cr.UID,
+	}
+	labels := map[string]string{
+		ContentRepositoryLabel: cr.Name,
+		ContentRepositoryVersionLabel: cr.ResourceVersion,
+	}
+
+	gw.SetLabels(labels)
+	gw.SetOwnerReferences([]metav1.OwnerReference{ownerRef})
 }

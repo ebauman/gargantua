@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/hobbyfarm/gargantua/pkg/controllers/contentrepositorycontroller"
 	"github.com/rancher/gitwatcher/pkg/types"
 	"os"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/hobbyfarm/gargantua/pkg/authserver"
 	hfClientset "github.com/hobbyfarm/gargantua/pkg/client/clientset/versioned"
 	hfInformers "github.com/hobbyfarm/gargantua/pkg/client/informers/externalversions"
+	gwClientset "github.com/rancher/gitwatcher/pkg/generated/clientset/versioned"
 	"github.com/hobbyfarm/gargantua/pkg/controllers/dynamicbindcontroller"
 	"github.com/hobbyfarm/gargantua/pkg/controllers/scheduledevent"
 
@@ -95,6 +97,11 @@ func main() {
 	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		glog.Fatalf("Error building kubernetes clientset: %s", err.Error())
+	}
+
+	gwClient, err := gwClientset.NewForConfig(cfg)
+	if err != nil {
+		glog.Fatalf("error building gitwatcher clientset: %s", err.Error())
 	}
 
 	hfInformerFactory := hfInformers.NewSharedInformerFactory(hfClient, time.Second*30)
@@ -260,6 +267,11 @@ func main() {
 			glog.Fatal(err)
 		}
 
+		crController, err := contentrepositorycontroller.NewContentRepositoryController(hfClient, hfInformerFactory, gwClient)
+		if err != nil {
+			glog.Fatal(err)
+		}
+
 		// setup wrangler context
 		wranglerSignalsContext := wranglerSignals.SetupSignalHandler(context.Background())
 		_, wranglerClusterContext := types.BuildContext(wranglerSignalsContext, "hobbyfarm", cfg)
@@ -304,6 +316,11 @@ func main() {
 		go func() {
 			defer wg.Done()
 			dynamicBindController.Run(stopCh)
+		}()
+
+		go func() {
+			defer wg.Done()
+			crController.Run(stopCh)
 		}()
 
 		go func() {

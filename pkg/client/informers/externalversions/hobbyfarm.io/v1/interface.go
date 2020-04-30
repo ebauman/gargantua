@@ -72,7 +72,7 @@ func (v *version) AccessCodes() AccessCodeInformer {
 
 // ContentRepositories returns a ContentRepositoryInformer.
 func (v *version) ContentRepositories() ContentRepositoryInformer {
-	return &contentRepositoryInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &contentRepositoryInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // Courses returns a CourseInformer.
