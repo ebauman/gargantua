@@ -1,0 +1,8 @@
+apiVersion: hobbyfarm.io/v1
+kind: ContentRepository
+metadata:
+  name: testing123
+spec:
+  repositoryUrl: https://github.com/ebauman/gargantua.git
+  enabled: true
+  branch: master
