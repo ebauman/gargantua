@@ -6,6 +6,8 @@ replace k8s.io/client-go => k8s.io/client-go v0.15.8
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
+	github.com/gofiber/fiber v1.9.3
+	github.com/gofiber/jwt v0.0.6
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.1

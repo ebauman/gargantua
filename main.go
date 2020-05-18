@@ -6,7 +6,6 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"github.com/hobbyfarm/gargantua/pkg/accesscode"
 	adminCourseServer "github.com/hobbyfarm/gargantua/pkg/admin/courseserver"
 	adminEnvironmentServer "github.com/hobbyfarm/gargantua/pkg/admin/environmentserver"
@@ -42,6 +41,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
+	"github.com/gofiber/fiber"
+
 	//"k8s.io/client-go/tools/cache"
 	"net/http"
 	"sync"
@@ -72,7 +73,7 @@ func main() {
 
 	flag.Parse()
 	glog.V(2).Infof("Starting Gargantua")
-	r := mux.NewRouter()
+	// r := mux.NewRouter()
 
 	cfg, err := rest.InClusterConfig()
 
@@ -184,6 +185,8 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+
+	fiber := fiber.New()
 
 	if shellServer {
 		glog.V(2).Infof("Starting as a shell server")
