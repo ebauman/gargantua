@@ -122,10 +122,10 @@ type VirtualMachineTemplateList struct {
 // cpu, ram, disk, etc.
 type VirtualMachineTemplateSpec struct {
 	Id        string            `json:"id"`
-	Name      string            `json:"name"`  // 2x4, etc.
-	Image     string            `json:"image"` // ubuntu-18.04
-	Resources CMSStruct         `json:"resources"`
-	CountMap  map[string]string `json:"count_map"`
+	Name      string            `json:"name" validate:"required"`  // 2x4, etc.
+	Image     string            `json:"image" validate:"required"` // ubuntu-18.04
+	Resources CMSStruct         `json:"resources" validate:"required"`
+	CountMap  map[string]string `json:"count_map" validate:"omitempty"`
 }
 
 // +genclient
@@ -151,19 +151,19 @@ type EnvironmentList struct {
 // AWS-us-west-2
 // hermes
 type EnvironmentSpec struct {
-	DisplayName          string                       `json:"display_name"`
-	DNSSuffix            string                       `json:"dnssuffix"`
-	Provider             string                       `json:"provider"`         // aws,vsphere,azure,custom ;)
-	TemplateMapping      map[string]map[string]string `json:"template_mapping"` //  lol
-	EnvironmentSpecifics map[string]string            `json:"environment_specifics"`
-	IPTranslationMap     map[string]string            `json:"ip_translation_map"`
-	WsEndpoint           string                       `json:"ws_endpoint"`
-	CapacityMode         CapacityMode                 `json:"capacity_mode"`
-	BurstCapable         bool                         `json:"burst_capable"`
-	CountCapacity        map[string]int               `json:"count_capacity"`
-	Capacity             CMSStruct                    `json:"capacity"`
-	BurstCountCapacity   map[string]int               `json:"burst_count_capacity"`
-	BurstCapacity        CMSStruct                    `json:"burst_capacity"`
+	DisplayName          string                       `json:"display_name" validate:"required"`
+	DNSSuffix            string                       `json:"dnssuffix" validate:"omitempty"`
+	Provider             string                       `json:"provider" validate:"required"`         // aws,vsphere,azure,custom ;)
+	TemplateMapping      map[string]map[string]string `json:"template_mapping" validate:"omitempty"` //  lol
+	EnvironmentSpecifics map[string]string            `json:"environment_specifics" validate:"omitempty"`
+	IPTranslationMap     map[string]string            `json:"ip_translation_map" validate:"omitempty"`
+	WsEndpoint           string                       `json:"ws_endpoint" validate:"required,hostname_rfc1123"`
+	CapacityMode         CapacityMode                 `json:"capacity_mode" validate:"required,oneof=raw count"`
+	BurstCapable         bool                         `json:"burst_capable"  validate:"required"`
+	CountCapacity        map[string]int               `json:"count_capacity" validate:"omitempty"`
+	Capacity             CMSStruct                    `json:"capacity" validate:"omitempty"`
+	BurstCountCapacity   map[string]int               `json:"burst_count_capacity" validate:"omitempty"`
+	BurstCapacity        CMSStruct                    `json:"burst_capacity" validate:"omitempty"`
 }
 
 type EnvironmentStatus struct {
@@ -172,9 +172,9 @@ type EnvironmentStatus struct {
 }
 
 type CMSStruct struct {
-	CPU     int `json:"cpu"`     // cores
-	Memory  int `json:"memory"`  // in MB
-	Storage int `json:"storage"` // in GB
+	CPU     int `json:"cpu" validate:"required"`     // cores
+	Memory  int `json:"memory" validate:"required"`  // in MB
+	Storage int `json:"storage" validate:"required"` // in GB
 }
 
 // +genclient
@@ -237,14 +237,14 @@ type CourseList struct {
 }
 
 type CourseSpec struct {
-	Id                string              `json:"id"`
-	Name              string              `json:"name"`
-	Description       string              `json:"description"`
-	Scenarios         []string            `json:"scenarios"`
-	VirtualMachines   []map[string]string `json:"virtualmachines"`
-	KeepAliveDuration string              `json:"keepalive_duration"`
-	PauseDuration     string              `json:"pause_duration"`
-	Pauseable         bool                `json:"pauseable"`
+	Id                string              `json:"id" validate:"omitempty"`
+	Name              string              `json:"name" validate:"required"`
+	Description       string              `json:"description" validate:"required"`
+	Scenarios         []string            `json:"scenarios" validate:"omitempty"`
+	VirtualMachines   []map[string]string `json:"virtualmachines" validate:"omitempty"`
+	KeepAliveDuration string              `json:"keepalive_duration" validate:"required"`
+	PauseDuration     string              `json:"pause_duration" validate:"required"`
+	Pauseable         bool                `json:"pauseable" validate:"required"`
 }
 
 // +genclient

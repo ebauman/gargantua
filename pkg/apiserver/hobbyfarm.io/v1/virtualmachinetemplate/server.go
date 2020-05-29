@@ -73,6 +73,10 @@ func (vmts *VirtualMachineTemplateServer) GetVirtualMachineTemplate(name string)
 	return data, nil
 }
 
+func (vmts *VirtualMachineTemplateServer) pre_CreateVirtualMachineTemplate(ctx *apiserver.Context) (*hfv1.VirtualMachineTemplate, error) {
+
+}
+
 func (vmts *VirtualMachineTemplateServer) CreateVirtualMachineTemplate(template hfv1.VirtualMachineTemplate) (*hfv1.VirtualMachineTemplate, error) {
 	data, err := vmts.client.Create(&template)
 	if err != nil {
