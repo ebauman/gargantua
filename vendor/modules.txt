@@ -4,10 +4,15 @@ github.com/davecgh/go-spew/spew
 github.com/dgrijalva/jwt-go
 # github.com/evanphx/json-patch v4.2.0+incompatible
 github.com/evanphx/json-patch
+# github.com/go-playground/locales v0.13.0
+github.com/go-playground/locales
+github.com/go-playground/locales/currency
+# github.com/go-playground/universal-translator v0.17.0
+github.com/go-playground/universal-translator
+# github.com/go-playground/validator/v10 v10.3.0
+github.com/go-playground/validator/v10
 # github.com/gofiber/fiber v1.9.3
 github.com/gofiber/fiber
-# github.com/gofiber/jwt v0.0.6
-github.com/gofiber/jwt
 # github.com/gogo/protobuf v1.2.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
@@ -50,6 +55,8 @@ github.com/json-iterator/go
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/gzip
 github.com/klauspost/compress/zlib
+# github.com/leodido/go-urn v1.2.0
+github.com/leodido/go-urn
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
@@ -61,6 +68,8 @@ github.com/rancher/terraform-controller/pkg/apis/terraformcontroller.cattle.io
 # github.com/rancher/wrangler v0.1.0
 github.com/rancher/wrangler/pkg/condition
 github.com/rancher/wrangler/pkg/genericcondition
+# github.com/spf13/cast v1.3.1
+github.com/spf13/cast
 # github.com/spf13/pflag v1.0.2
 github.com/spf13/pflag
 # github.com/valyala/bytebufferpool v1.0.0

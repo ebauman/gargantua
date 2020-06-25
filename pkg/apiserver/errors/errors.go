@@ -7,46 +7,89 @@ import (
 
 type Error struct {
 	Type ErrorType
+	Message string
 }
 
 type ErrorType string
 
 const (
-	BadRequest   ErrorType = "badrequest"
-	Unauthorized ErrorType = "unauthorized"
-	Forbidden    ErrorType = "forbidden"
-	NotFound	 ErrorType = "notfound"
-	Internal	 ErrorType = "internal"
+	StatusBadRequest ErrorType = "badrequest"
+	StatusUnauthorized     ErrorType = "unauthorized"
+	StatusForbidden        ErrorType = "forbidden"
+	StatusNotFound         ErrorType = "notfound"
+	StatusInternal         ErrorType = "internal"
+	StatusUnknown          ErrorType = "unknown"
+	StatusConflict		   ErrorType = "conflict"
 )
 
 func (e Error) Error() string {
-	return string(e.Type)
+	return string(e.Message)
 }
 
-func New(et ErrorType) Error {
+func new(et ErrorType, msg string) Error {
 	return Error{
 		Type :et,
 	}
 }
 
+func BadRequest(msg string) Error {
+	return new(StatusBadRequest, msg)
+}
+
 func IsBadRequest(err error) bool {
-	return isType(err, BadRequest)
+	return isType(err, StatusBadRequest)
+}
+
+func Unauthorized(msg string) Error {
+	return new(StatusUnauthorized, msg)
 }
 
 func IsUnauthorized(err error) bool {
-	return isType(err, Unauthorized)
+	return isType(err, StatusUnauthorized)
+}
+
+func Forbidden(msg string) Error {
+	return new(StatusForbidden, msg)
 }
 
 func IsForbidden(err error) bool {
-	return isType(err, Forbidden)
+	return isType(err, StatusForbidden)
+}
+
+func NotFound(msg string) Error {
+	return new(StatusNotFound, msg)
 }
 
 func IsNotFound(err error) bool {
-	return isType(err, NotFound)
+	return isType(err, StatusNotFound)
+}
+
+func Internal(msg string) Error {
+	return new(StatusInternal, msg)
 }
 
 func IsInternal(err error) bool {
-	return isType(err, Internal)
+	return isType(err, StatusInternal)
+}
+
+func IsConflict(err error) bool {
+	return isType(err, StatusConflict)
+}
+
+func GetType(err error) ErrorType {
+	_, ok := err.(*errors.StatusError)
+
+	if ok {
+		return translateK8sType(err)
+	}
+
+	e, ok := err.(Error)
+
+	if ok {
+		return e.Type
+	}
+
+	return StatusUnknown
 }
 
 func isType(err error, et ErrorType) bool {
@@ -70,16 +113,20 @@ func isType(err error, et ErrorType) bool {
 func translateK8sType(err error) ErrorType {
 	switch errors.ReasonForError(err) {
 	case v1.StatusReasonNotFound:
-		return NotFound
+		return StatusNotFound
 	case v1.StatusReasonBadRequest:
-		return BadRequest
+		return StatusBadRequest
 	case v1.StatusReasonUnauthorized:
-		return Unauthorized
+		return StatusUnauthorized
 	case v1.StatusReasonForbidden:
-		return Forbidden
+		return StatusForbidden
 	case v1.StatusReasonInternalError:
-		return Internal
+		return StatusInternal
+	case v1.StatusReasonAlreadyExists:
+		fallthrough
+	case v1.StatusReasonConflict:
+		return StatusConflict
 	}
 
-	return Internal
+	return StatusInternal
 }

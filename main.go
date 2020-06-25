@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"github.com/gorilla/mux"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/hobbyfarm.io/v1/virtualmachinetemplate"
 	"os"
 
 	"github.com/golang/glog"
@@ -40,8 +43,6 @@ import (
 	"github.com/hobbyfarm/gargantua/pkg/vmserver"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"github.com/gofiber/fiber"
 
 	//"k8s.io/client-go/tools/cache"
 	"net/http"
@@ -186,7 +187,7 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	fiber := fiber.New()
+	r := mux.NewRouter()
 
 	if shellServer {
 		glog.V(2).Infof("Starting as a shell server")
@@ -302,6 +303,13 @@ func main() {
 			dynamicBindController.Run(stopCh)
 		}()
 	}
+
+	////// TESTING
+	svr := apiserver.New(&apiserver.APIServerSettings{})
+	virtualmachinetemplate.Register(svr, hfClient.HobbyfarmV1().VirtualMachineTemplates())
+
+	svr.Listen(8090)
+	//////
 
 	hfInformerFactory.Start(stopCh)
 

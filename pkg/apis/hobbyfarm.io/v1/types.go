@@ -121,7 +121,7 @@ type VirtualMachineTemplateList struct {
 // VM type is a genercized collection of information about a VM. this includes things like
 // cpu, ram, disk, etc.
 type VirtualMachineTemplateSpec struct {
-	Id        string            `json:"id"`
+	Id        string            `json:"id" validate:"omitempty"`
 	Name      string            `json:"name" validate:"required"`  // 2x4, etc.
 	Image     string            `json:"image" validate:"required"` // ubuntu-18.04
 	Resources CMSStruct         `json:"resources" validate:"required"`
