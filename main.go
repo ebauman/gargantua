@@ -1,10 +1,17 @@
+//go:generate go run pkg/codegen/main.go
+
 package main
 
 import (
 	"flag"
+	"github.com/gofiber/fiber"
 	"github.com/gorilla/mux"
 	"github.com/hobbyfarm/gargantua/pkg/apiserver"
-	"github.com/hobbyfarm/gargantua/pkg/apiserver/hobbyfarm.io/v1/virtualmachinetemplate"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/auth"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/auth/base"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/auth/hobbyfarm"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/hobbyfarm.io/virtualmachine"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/hobbyfarm.io/virtualmachineset"
 	"os"
 
 	"github.com/golang/glog"
@@ -305,10 +312,33 @@ func main() {
 	}
 
 	////// TESTING
-	svr := apiserver.New(&apiserver.APIServerSettings{})
-	virtualmachinetemplate.Register(svr, hfClient.HobbyfarmV1().VirtualMachineTemplates())
+	defaultAuth, err := base.New()
+	if err != nil {
+		glog.Fatalf("error building default auth provider %s", err)
+	}
+	hobbyfarmAuth, err := hobbyfarm.New(hfClient, hfInformerFactory)
+	if err != nil {
+		glog.Fatalf("error building hobbyfarm auth provider %s", err)
+	}
 
-	svr.Listen(8090)
+	svr := apiserver.New(&apiserver.APIServerSettings{
+		AuthServers: []auth.AuthServer{
+			defaultAuth,
+			hobbyfarmAuth,
+		},
+		FiberSettings: &fiber.Settings{
+			DisableStartupMessage: true,
+		},
+	})
+
+	virtualmachineset.Register(svr, hfClient.HobbyfarmV1().VirtualMachineSets())
+	virtualmachine.Register(svr, hfClient.HobbyfarmV1().VirtualMachines())
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		svr.Listen(8090)
+	}()
 	//////
 
 	hfInformerFactory.Start(stopCh)

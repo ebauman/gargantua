@@ -6,20 +6,20 @@ import (
 )
 
 type Error struct {
-	Type ErrorType
+	Type    ErrorType
 	Message string
 }
 
 type ErrorType string
 
 const (
-	StatusBadRequest ErrorType = "badrequest"
-	StatusUnauthorized     ErrorType = "unauthorized"
-	StatusForbidden        ErrorType = "forbidden"
-	StatusNotFound         ErrorType = "notfound"
-	StatusInternal         ErrorType = "internal"
-	StatusUnknown          ErrorType = "unknown"
-	StatusConflict		   ErrorType = "conflict"
+	StatusBadRequest   ErrorType = "badrequest"
+	StatusUnauthorized ErrorType = "unauthorized"
+	StatusForbidden    ErrorType = "forbidden"
+	StatusNotFound     ErrorType = "notfound"
+	StatusInternal     ErrorType = "internal"
+	StatusUnknown      ErrorType = "unknown"
+	StatusConflict     ErrorType = "conflict"
 )
 
 func (e Error) Error() string {
@@ -28,7 +28,8 @@ func (e Error) Error() string {
 
 func new(et ErrorType, msg string) Error {
 	return Error{
-		Type :et,
+		Type: et,
+		Message: msg,
 	}
 }
 
