@@ -1,0 +1,44 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: HobbyFarm Gargantua
+  description: API for accessing and managing HobbyFarm resources
+paths:
+  /virtualmachines:
+    get:
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessCode'
+components:
+  schemas:
+    VirtualMachine:
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+        vm_template_id:
+          type: string
+        keypair_name:
+          type: string
+        vm_claim_id:
+          type: string
+        user:
+          type: string
+        provision:
+          type: boolean
+        vm_set_id:
+          type: string
+  parameters: {}
+  securitySchemes: {}
+  requestBodies: {}
+  responses: {}
+  headers: {}
+  examples: {}
+  links: {}
+  callbacks: {}
