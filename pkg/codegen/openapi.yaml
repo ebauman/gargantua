@@ -1,0 +1,548 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: HobbyFarm Gargantua
+  description: API for accessing and managing HobbyFarm resources
+paths:
+  /courses:
+    get:
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/course'
+        '401':
+          description: 'Not Authenticated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  /virtualmachines:
+    get:
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/virtualmachine'
+components:
+  schemas:
+    error:
+      type: object
+      properties:
+        type:
+          type: string
+        status:
+          type: integer
+        message:
+          type: string
+    dynamicbindrequest:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            vm_claim:
+              type: string
+            attempts:
+              type: integer
+        status:
+          type: object
+          properties:
+            current_attempts:
+              type: integer
+            expired:
+              type: boolean
+            fulfilled:
+              type: boolean
+            dynamic_bind_configuration_id:
+              type: string
+            virtual_machine_ids:
+              type: object
+              additionalProperties:
+                type: string
+    dynamicbindconfiguration:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            environment:
+              type: string
+            base_name:
+              type: string
+            restricted_bind:
+              type: boolean
+            restricted_bind_value:
+              type: string
+            burst_count_capacity:
+              type: object
+              additionalProperties:
+                type: integer
+            burst_capacity:
+              $ref: '#/components/schemas/cmsstruct'
+    scheduledevent:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            creator:
+              type: string
+            event_name:
+              type: string
+            description:
+              type: string
+            start_time:
+              type: string
+            end_time:
+              type: string
+            required_vms:
+              type: object
+              additionalProperties:
+                type: object
+                additionalProperties:
+                  type: integer
+            access_code:
+              type: string
+            restricted_bind:
+              type: boolean
+            restricted_bind_value:
+              type: string
+            scenarios:
+              type: array
+              items:
+                type: string
+            courses:
+              type: array
+              items:
+                type: string
+        status:
+          type: object
+          properties:
+            access_code_id:
+              type: string
+            vmsets:
+              type: array
+              items:
+                type: string
+            active:
+              type: boolean
+            provisioned:
+              type: boolean
+            ready:
+              type: boolean
+            finished:
+              type: boolean
+    user:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+            password:
+              type: string
+            access_codes:
+              type: array
+              items:
+                type: string
+            admin:
+              type: boolean
+    accesscode:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            code:
+              type: string
+            description:
+              type: string
+            scenarios:
+              type: array
+              items:
+                type: string
+            courses:
+              type: array
+              items:
+                type: string
+            expiration:
+              type: string
+            vmsets:
+              type: array
+              items:
+                type: string
+            restricted_bind:
+              type: boolean
+            restricted_bind_value:
+              type: string
+    session:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            scenario:
+              type: string
+            course:
+              type: string
+            user:
+              type: string
+            vm_claim:
+              type: array
+              items:
+                type: string
+            access_code:
+              type: string
+        status:
+          type: object
+          properties:
+            paused:
+              type: boolean
+            paused_time:
+              type: string
+            active:
+              type: boolean
+            finished:
+              type: boolean
+            start_time:
+              type: string
+            end_time:
+              type: string
+    scenariostep:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    scenario:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            steps:
+              type: array
+              items:
+                $ref: '#/components/schemas/scenariostep'
+            virtualmachines:
+              type: array
+              items:
+                type: object
+                additionalProperties:
+                  type: string
+            keepalive_duration:
+              type: string
+            pause_duration:
+              type: string
+            pauseable:
+              type: boolean
+    course:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            scenarios:
+              type: array
+              items:
+                type: string
+            virtualmachines:
+              type: array
+              items:
+                type: object
+                additionalProperties:
+                  type: string
+            keepalive_duration:
+              type: string
+            pause_duration:
+              type: string
+            pauseable:
+              type: boolean
+    virtualmachineprovision:
+      type: object
+      properties:
+        vm_name:
+          type: string
+        tfc_state:
+          type: string
+        tfc_cm:
+          type: string
+    virtualmachineset:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            count:
+              type: integer
+            environment:
+              type: string
+            vm_template:
+              type: string
+            base_name:
+              type: string
+            restricted_bind:
+              type: boolean
+            restricted_bind_value:
+              type: string
+        status:
+          type: object
+          properties:
+            machines:
+              type: array
+              items:
+                $ref: '#/components/schemas/virtualmachineprovision'
+            available:
+              type: integer
+            provisioned:
+              type: integer
+    capacitymode:
+      type: string
+      enum:
+        - raw
+        - count
+    environment:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            display_name:
+              type: string
+            dnssuffix:
+              type: string
+            provider:
+              type: string
+            template_mapping:
+              type: object
+              additionalProperties:
+                type: object
+                additionalProperties:
+                  type: string
+            environment_specifics:
+              type: object
+              additionalProperties:
+                type: string
+            ip_translation_map:
+              type: object
+              additionalProperties:
+                type: string
+            ws_endpoint:
+              type: string
+            capacity_mode:
+              $ref: '#/components/schemas/capacitymode'
+            burst_capable:
+              type: boolean
+            count_capacity:
+              type: object
+              additionalProperties:
+                type: integer
+            capacity:
+              $ref: '#/components/schemas/cmsstruct'
+            burst_count_capacity:
+              type: object
+              additionalProperties:
+                type: integer
+            burst_capacity:
+              $ref: '#/components/schemas/cmsstruct'
+        status:
+          type: object
+          properties:
+            used:
+              $ref: '#/components/schemas/cmsstruct'
+            available_count:
+              type: object
+              additionalProperties:
+                type: integer
+    cmsstruct:
+      type: object
+      properties:
+        cpu:
+          type: integer
+        memory:
+          type: integer
+        storage:
+          type: integer
+    virtualmachinetemplate:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            image:
+              type: string
+            resources:
+              $ref: '#/components/schemas/cmsstruct'
+            count_map:
+              type: object
+              additionalProperties:
+                type: string
+    virtualmachineclaimvm:
+      type: object
+      properties:
+        template:
+          type: string
+        vm_id:
+          type: string
+    virtualmachineclaim:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            user:
+              type: string
+            restricted_bind:
+              type: boolean
+            restricted_bind_value:
+              type: string
+            vm:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/virtualmachineclaimvm'
+            dynamic_bind_capable:
+              type: boolean
+        status:
+          type: object
+          properties:
+            bind_mode:
+              type: string
+            static_bind_attempts:
+              type: integer
+            dynamic_bind_request_id:
+              type: string
+            bound:
+              type: boolean
+            ready:
+              type: boolean
+            tainted:
+              type: boolean
+    vmstatus:
+      type: string
+      enum:
+        - readyforprovisioning
+        - provisioned
+        - running
+        - terminating
+    virtualmachine:
+      type: object
+      properties:
+        name:
+          type: string
+        spec:
+          type: object
+          properties:
+            id:
+              type: string
+            vm_template_id:
+              type: string
+            keypair_name:
+              type: string
+            vm_claim_id:
+              type: string
+            user:
+              type: string
+            provision:
+              type: boolean
+            vm_set_id:
+              type: string
+        status:
+          type: object
+          properties:
+            status:
+              $ref: '#/components/schemas/vmstatus'
+            allocated:
+              type: boolean
+            tainted:
+              type: boolean
+            public_ip:
+              type: string
+            private_ip:
+              type: string
+            environment_id:
+              type: string
+            hostname:
+              type: string
+            tfstate:
+              type: string
+            ws_endpoint:
+              type: string
+
+  parameters: {}
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    BearerAdmin:
+      type: http
+      scheme: bearer
+  requestBodies: {}
+  responses: {}
+  headers: {}
+  examples: {}
+  links: {}
+  callbacks: {}
