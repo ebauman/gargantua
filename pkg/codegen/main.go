@@ -60,7 +60,7 @@ func main() {
 		log.Fatalf("error loading openapi spec: %s", err)
 	}
 
-	code, err := codegen.Generate(swagger, "apiserver", opts)
+	code, err := codegen.Generate(swagger, "stubs", opts)
 	if err != nil {
 		log.Fatalf("error generating openapi code: %s", err)
 	}

@@ -24,17 +24,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
 
-  /virtualmachines:
-    get:
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: 'OK'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/virtualmachine'
+#  /virtualmachines:
+#    get:
+#      security:
+#        - BearerAuth: []
+#      responses:
+#        '200':
+#          description: 'OK'
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/virtualmachine'
 components:
   schemas:
     error:
@@ -297,11 +297,13 @@ components:
               items:
                 type: string
             virtualmachines:
-              type: array
-              items:
-                type: object
-                additionalProperties:
-                  type: string
+              type: object
+              additionalProperties:
+                type: string
+#              items:
+#                type: object
+#                additionalProperties:
+#                  type: string
             keepalive_duration:
               type: string
             pause_duration:
