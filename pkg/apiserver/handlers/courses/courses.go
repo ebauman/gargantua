@@ -7,7 +7,9 @@ import (
 	hfv1 "github.com/hobbyfarm/gargantua/pkg/apis/hobbyfarm.io/v1"
 	apiserverUtil "github.com/hobbyfarm/gargantua/pkg/apiserver/handlers/util"
 	"github.com/hobbyfarm/gargantua/pkg/apiserver/stubs"
+	"github.com/hobbyfarm/gargantua/pkg/authclient"
 	hfClientset "github.com/hobbyfarm/gargantua/pkg/client/clientset/versioned"
+	hfInformers "github.com/hobbyfarm/gargantua/pkg/client/informers/externalversions"
 	util "github.com/hobbyfarm/gargantua/pkg/util"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/tools/cache"
@@ -18,9 +20,31 @@ const (
 )
 
 type Server struct {
-	client hfClientset.Clientset
+	client *hfClientset.Clientset
 	courseIndexer cache.Indexer
 	acClient *accesscode.AccessCodeClient
+}
+
+func idIndexer(obj interface{}) ([]string, error) {
+	course, ok := obj.(*hfv1.Course)
+	if !ok {
+		return []string{}, nil
+	}
+	return []string{course.Spec.Id}, nil
+}
+
+func NewServer(acClient *accesscode.AccessCodeClient, hfClientset *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) (*CourseServer, error) {
+	course := Server{}
+
+	course.client = hfClientset
+	course.acClient = acClient
+	inf := hfInformerFactory.Hobbyfarm().V1().Courses().Informer()
+	indexers := map[string]cache.IndexFunc{idIndex: idIndexer}
+
+	inf.AddIndexers(indexers)
+	course.courseIndexer = inf.GetIndexer()
+
+	return &course, nil
 }
 
 func (s *Server) GetCourses(ctx echo.Context) error {
@@ -47,9 +71,11 @@ func (s *Server) GetCourses(ctx echo.Context) error {
 		if err != nil {
 			glog.Errorf("error retrieving course with id %s: %v", courseId, err)
 		} else {
-			courses = append(courses, course)
+			courses = append(courses, ToStub(course))
 		}
 	}
+
+	return ctx.JSON(200, courses)
 }
 
 func (s *Server) getCourseById(id string) (hfv1.Course, error) {
@@ -75,7 +101,7 @@ func (s *Server) getCourseById(id string) (hfv1.Course, error) {
 	return *course, nil
 }
 
-func FromStub(stub stubs.Course) (hfv1.Course, error) {
+func FromStub(stub stubs.Course) hfv1.Course {
 	course := hfv1.Course{
 		Spec: hfv1.CourseSpec{
 			Description: *stub.Spec.Description,
@@ -86,16 +112,26 @@ func FromStub(stub stubs.Course) (hfv1.Course, error) {
 			Pauseable: *stub.Spec.Pauseable,
 			Scenarios: *stub.Spec.Scenarios,
 			VirtualMachines: *stub.Spec.Virtualmachines,
-		}
+		},
 	}
+
+	return course
 }
 
-// how do we handle the conversion from an openapi stub type to an hfv1 type?
-// the maps look troublesome, the spec has them as *[]struct { AdditionalProperties map[string]string }}
-// which does not easily translate.
-// Can we do this automatically somehow?
-// Is this better off just being done manually on each method or something?
+func ToStub(course hfv1.Course) stubs.Course {
+	outCourse := stubs.Course{
+		Name: &course.Name,
+		Spec: &stubs.Coursespec{
+			Description:       &course.Spec.Description,
+			Id:                &course.Spec.Id,
+			KeepaliveDuration: &course.Spec.KeepAliveDuration,
+			Name:              &course.Spec.Name,
+			PauseDuration:     &course.Spec.PauseDuration,
+			Pauseable:         &course.Spec.Pauseable,
+			Scenarios:         &course.Spec.Scenarios,
+			Virtualmachines:   &course.Spec.VirtualMachines,
+		},
+	}
 
-func ToStub() {
-
+	return outCourse
 }

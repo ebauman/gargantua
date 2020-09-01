@@ -12,7 +12,15 @@ import (
 )
 
 type Server struct {
-	hfClientSet clientset.Clientset
+	hfClientSet *clientset.Clientset
+}
+
+func NewServer(hfClientset *clientset.Clientset) *Server {
+	server := &Server{
+		hfClientSet: hfClientset,
+	}
+
+	return server
 }
 
 func (s *Server) MiddlwareDispatch(ctx echo.Context, provider string, scopes []string) error {

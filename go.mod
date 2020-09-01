@@ -5,17 +5,14 @@ go 1.13.4
 replace k8s.io/client-go => k8s.io/client-go v0.15.8
 
 require (
-	github.com/deepmap/oapi-codegen v1.3.11
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
+	github.com/ebauman/oapi-codegen v1.4.0
 	github.com/getkin/kin-openapi v0.13.0
-	github.com/go-swagger/go-swagger v0.25.0 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/labstack/echo/v4 v4.1.11
-	github.com/pkg/errors v0.9.1
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rancher/terraform-controller v0.0.10-alpha1
 	github.com/rancher/wrangler v0.1.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899

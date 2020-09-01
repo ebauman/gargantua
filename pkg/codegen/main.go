@@ -4,8 +4,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/deepmap/oapi-codegen/pkg/codegen"
-	"github.com/deepmap/oapi-codegen/pkg/util"
+	"github.com/ebauman/oapi-codegen/pkg/codegen"
+	"github.com/ebauman/oapi-codegen/pkg/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"go/format"
 	"io/ioutil"

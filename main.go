@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/handlers/auth"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/handlers/courses"
+	"github.com/hobbyfarm/gargantua/pkg/apiserver/stubs"
 	"os"
 
 	"github.com/golang/glog"
@@ -301,6 +304,24 @@ func main() {
 	}
 
 	hfInformerFactory.Start(stopCh)
+
+	//// Setup echo stuff
+	echoCourseServer, err := courses.NewServer(acClient, hfClient, hfInformerFactory)
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	type CompositeHandler struct {
+		*courses.Server
+	}
+
+	var handler = &CompositeHandler{
+		echoCourseServer,
+	}
+
+	echoAuthServer := auth.NewServer(hfClient)
+
+	stubs.NewSecureServer(handler, echoAuthServer.MiddlwareDispatch)
 
 	wg.Add(1)
 
