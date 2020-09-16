@@ -1,0 +1,297 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "hobbyfarm/virtualmachine_service.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v2/virtualmachines": {
+      "get": {
+        "operationId": "VirtualMachineService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachineList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "VirtualMachineService"
+        ]
+      },
+      "post": {
+        "operationId": "VirtualMachineService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachine"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VirtualMachine"
+            }
+          }
+        ],
+        "tags": [
+          "VirtualMachineService"
+        ]
+      }
+    },
+    "/api/v2/virtualmachines/{ID}": {
+      "get": {
+        "operationId": "VirtualMachineService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachine"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VirtualMachineService"
+        ]
+      },
+      "delete": {
+        "operationId": "VirtualMachineService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VirtualMachineService"
+        ]
+      }
+    },
+    "/api/v2/virtualmachines/{Name}": {
+      "put": {
+        "operationId": "VirtualMachineService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachine"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VirtualMachine"
+            }
+          }
+        ],
+        "tags": [
+          "VirtualMachineService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Empty": {
+      "type": "object"
+    },
+    "VMStatus": {
+      "type": "string",
+      "enum": [
+        "RFP",
+        "Provisioned",
+        "Running",
+        "Terminating"
+      ],
+      "default": "RFP"
+    },
+    "VirtualMachine": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Spec": {
+          "$ref": "#/definitions/VirtualMachineSpec"
+        },
+        "Status": {
+          "$ref": "#/definitions/VirtualMachineStatus"
+        }
+      }
+    },
+    "VirtualMachineList": {
+      "type": "object",
+      "properties": {
+        "VirtualMachines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VirtualMachine"
+          }
+        }
+      }
+    },
+    "VirtualMachineSpec": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "VirtualMachineTemplateId": {
+          "type": "string"
+        },
+        "KeyPair": {
+          "type": "string"
+        },
+        "VirtualMachineClaimId": {
+          "type": "string"
+        },
+        "UserId": {
+          "type": "string"
+        },
+        "Provision": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "VirtualMachineSetId": {
+          "type": "string"
+        }
+      }
+    },
+    "VirtualMachineStatus": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "$ref": "#/definitions/VMStatus"
+        },
+        "Allocated": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "Tainted": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "PublicIP": {
+          "type": "string"
+        },
+        "PrivateIP": {
+          "type": "string"
+        },
+        "EnvironmentId": {
+          "type": "string"
+        },
+        "Hostname": {
+          "type": "string"
+        },
+        "TFState": {
+          "type": "string"
+        },
+        "WsEndpoint": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

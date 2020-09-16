@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service VirtualMachineClaimService {
+  rpc List(Empty) returns (VirtualMachineClaimList) {
+    option (google.api.http) = {
+      get: "/api/v2/virtualmachineclaims";
+    };
+  }
+
+  rpc Get(ID) returns (VirtualMachineClaim) {
+    option(google.api.http) = {
+      get: "/api/v2/virtualmachineclaims/{ID}";
+    };
+  }
+
+  rpc Create(VirtualMachineClaim) returns (VirtualMachineClaim) {
+    option(google.api.http) = {
+      post: "/api/v2/virtualmachineclaims";
+      body: "*";
+    };
+  }
+
+  rpc Update(VirtualMachineClaim) returns (VirtualMachineClaim) {
+    option(google.api.http) = {
+      put: "/api/v2/virtualmachineclaims/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/virtualmachineclaims/{ID}";
+    };
+  }
+}
+
+message VirtualMachineClaimList {
+  repeated VirtualMachineClaim VirtualMachineClaims = 1;
+}

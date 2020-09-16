@@ -1,0 +1,320 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+// protoc --go_out=plugins=grpc:$GOPATH/src -Iproto/ proto/hobbyfarm/*.proto
+// protoc -Iproto/ --grpc-gateway_out=logtostderr=true,allow_delete_body=true:$GOPATH/src proto/hobbyfarm/*.proto
+// protoc -Iproto/ --swagger_out=logtostderr=true,allow_delete_body=true:./pkg/protobuf proto/hobbyfarm/*.proto
+
+// protoc --go_out=plugins=grpc:$GOPATH/src -Iproto/ proto/racepal/*.proto && protoc -Iproto/ --grpc-gateway_out=logtostderr=true,allow_delete_body=true:$GOPATH/src proto/racepal/*.proto && protoc -Iproto/ --swagger_out=logtostderr=true,allow_delete_body=true:./pkg/rpc proto/racepal/*.proto
+
+message Empty{
+}
+
+message StringMap {
+  map<string, string> Map = 1;
+}
+
+message Int32Map {
+  map<string, int32> Map = 1;
+}
+
+message ID {
+  string ID = 1;
+}
+
+enum VMStatus {
+  RFP = 0;
+  Provisioned = 1;
+  Running = 2;
+  Terminating = 3;
+}
+
+enum CapacityMode {
+  Raw = 0;
+  Count = 1;
+}
+
+message VirtualMachine {
+  string Name = 1;
+  VirtualMachineSpec Spec = 2;
+  VirtualMachineStatus Status = 3;
+}
+
+message VirtualMachineSpec {
+  string Id = 1;
+  string VirtualMachineTemplateId = 2;
+  string KeyPair = 3;
+  string VirtualMachineClaimId = 4;
+  string UserId = 5;
+  bool Provision = 6;
+  string VirtualMachineSetId = 7;
+}
+
+message VirtualMachineStatus {
+  VMStatus Status = 1;
+  bool Allocated = 2;
+  bool Tainted = 3;
+  string PublicIP = 4;
+  string PrivateIP = 5;
+  string EnvironmentId = 6;
+  string Hostname = 7;
+  string TFState = 8;
+  string WsEndpoint = 9;
+}
+
+message VirtualMachineClaim {
+  string Name = 1;
+  VirtualMachineClaimSpec Spec = 2;
+  VirtualMachineClaimStatus Status = 3;
+}
+
+message VirtualMachineClaimSpec {
+  string Id = 1;
+  string UserId = 2;
+  bool RestrictedBind = 3;
+  string RestrictedBindValue = 4;
+  map<string, VirtualMachineClaimVM> VirtualMachines = 5;
+  bool DynamicCapable = 6;
+}
+
+message VirtualMachineClaimStatus {
+  string BindMode = 1;
+  int32 StaticBindAttempts = 2;
+  string DynamicBindRequestId = 3;
+  bool Bound = 4;
+  bool Ready = 5;
+  bool Tainted = 6;
+}
+
+message VirtualMachineClaimVM {
+  string Template = 1;
+  string VirtualMachineId = 2;
+}
+
+message VirtualMachineTemplate {
+  string Name = 1;
+  VirtualMachineTemplateSpec Spec = 2;
+}
+
+message VirtualMachineTemplateSpec {
+  string Id = 1;
+  string Name = 2;
+  string Image = 3;
+  CMSStruct Resources = 4;
+  map<string, string> CountMap = 5;
+}
+
+message CMSStruct {
+  int32 CPU = 1;
+  int32 Memory = 2;
+  int32 Storage = 3;
+}
+
+message Enviroment {
+  string Name = 1;
+  EnvironmentSpec Spec = 2;
+  EnvironmentStatus Status = 3;
+}
+
+message EnvironmentSpec {
+  string DisplayName = 1;
+  string DNSSuffix = 2;
+  string Provider = 3;
+  map<string, StringMap> TemplateMapping = 4;
+  map<string, string> EnvironmentSpecifics = 5;
+  map<string, string> IPTranslationMap = 6;
+  string WsEndpoint = 7;
+  CapacityMode CapacityMode = 8;
+  bool BurstCapable = 9;
+  map<string, int32> CountCapacity = 10;
+  CMSStruct Capacity = 11;
+  map<string, int32> BurstCountCapacity = 12;
+  CMSStruct BurstCapacity = 13;
+}
+
+message EnvironmentStatus {
+  CMSStruct Used = 1;
+  map<string, int32> AvailableCount = 2;
+}
+
+message VirtualMachineSet {
+  string Name = 1;
+  VirtualMachineSetSpec Spec = 2;
+  VirtualMachineSetStatus Status = 3;
+}
+
+message VirtualMachineSetSpec {
+  int32 Count = 1;
+  string Environment = 2;
+  string VMTemplate = 3;
+  string BaseName = 4;
+  bool RestrictedBind = 5;
+  string RestrictedBindValue = 6;
+}
+
+message VirtualMachineSetStatus {
+  repeated VirtualMachineProvision Machines = 1;
+  int32 AvailableCount = 2;
+  int32 ProvisionedCount = 3;
+}
+
+message VirtualMachineProvision {
+  string VirtualMachineName = 1;
+  string TFControllerState = 2;
+  string TFControllerCM = 3;
+}
+
+message Course {
+  string Name = 1;
+  CourseSpec Spec = 2;
+}
+
+message CourseSpec {
+  string Id = 1;
+  string Name = 2;
+  string Description = 3;
+  repeated string Scenarios = 4;
+  repeated StringMap VirtualMachines = 5;
+  string KeepAliveDuration = 6;
+  string PauseDuration = 7;
+  bool Pauseable = 8;
+}
+
+message Scenario {
+  string Name = 1;
+  ScenarioSpec Spec = 2;
+}
+
+message ScenarioSpec {
+  string Id = 1;
+  string Name= 2;
+  string Description = 3;
+  repeated ScenarioStep Steps = 4;
+  repeated StringMap VirtualMachines = 5;
+  string KeepAliveDuration = 6;
+  string PauseDuration = 7;
+  bool Pauseable = 8;
+}
+
+message ScenarioStep {
+  string Title = 1;
+  string Content = 2;
+}
+
+message Session {
+  string Name = 1;
+  SessionSpec Spec = 2;
+  SessionStatus Status = 3;
+}
+
+message SessionSpec {
+  string Id = 1;
+  string ScenarioId = 2;
+  string CourseId = 3;
+  string UserId = 4;
+  repeated string VmClaimSet = 5;
+  string AccessCode = 6;
+}
+
+message SessionStatus {
+  bool Paused = 1;
+  string PausedTime = 2;
+  bool Active = 3;
+  bool Finished = 5;
+  string StartTime = 6;
+  string ExpirationTime = 7;
+}
+
+message AccessCode {
+  string Name = 1;
+  AccessCodeSpec Spec = 2;
+}
+
+message AccessCodeSpec {
+  string Code = 1;
+  string Description = 2;
+  repeated string Scenarios = 3;
+  repeated string Courses = 4;
+  string Expiration = 5;
+  repeated string VirtualMachineSets = 6;
+  bool RestrictedBind = 7;
+  string RestrictedBindValue = 8;
+}
+
+message User {
+  string Name = 1;
+  UserSpec Spec = 2;
+}
+
+message UserSpec {
+  string Id = 1;
+  string Email = 2;
+  string Password = 3;
+  repeated string AccessCodes = 4;
+  bool Admin = 5;
+}
+
+message ScheduledEvent {
+  string Name = 1;
+  ScheduledEventSpec Spec = 2;
+  ScheduledEventStatus Status = 3;
+}
+
+message ScheduledEventSpec {
+  string Creator = 1;
+  string Name = 2;
+  string Description = 3;
+  string StartTime = 4;
+  string EndTime = 5;
+  map<string, Int32Map> RequiredVirtualMachines = 6;
+  string AccessCode = 7;
+  bool RestrictedBind = 8;
+  string RestrictedBindValue = 9;
+  repeated string Scenarios = 10;
+  repeated string Courses = 11;
+}
+
+message ScheduledEventStatus {
+  string AccessCodeId = 1;
+  repeated string VirtualMachineSets = 2;
+  bool Active = 3;
+  bool Provisioned = 4;
+  bool Ready = 5;
+  bool Finished = 6;
+}
+
+message DynamicBindConfiguration {
+  string Name = 1;
+  DynamicBindConfigurationSpec Spec = 2;
+}
+
+message DynamicBindConfigurationSpec {
+  string Id = 1;
+  string Environment = 2;
+  string BaseName = 3;
+  bool RestrictedBind = 4;
+  string RestrictedBindValue = 5;
+  map<string, int32> BurstCountCapacity = 6;
+  CMSStruct BurstCapacity = 7;
+}
+
+message DynamicBindRequest {
+  string Name = 1;
+  DynamicBindRequestSpec Spec = 2;
+  DynamicBindRequestStatus Status = 3;
+}
+
+message DynamicBindRequestSpec {
+  string Id = 1;
+  string VirtualMachineClaim = 2;
+  int32 Attempts = 3;
+}
+
+message DynamicBindRequestStatus {
+  int32 CurrentAttempts = 1;
+  bool Expired = 2;
+  bool Fulfilled = 3;
+  string DynamicBindConfigurationId = 4;
+  map<string, string> VirtualMachineIds = 5;
+}

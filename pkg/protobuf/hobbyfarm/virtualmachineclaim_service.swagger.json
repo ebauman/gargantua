@@ -1,0 +1,292 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "hobbyfarm/virtualmachineclaim_service.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v2/virtualmachineclaims": {
+      "get": {
+        "operationId": "VirtualMachineClaimService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachineClaimList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "VirtualMachineClaimService"
+        ]
+      },
+      "post": {
+        "operationId": "VirtualMachineClaimService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachineClaim"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VirtualMachineClaim"
+            }
+          }
+        ],
+        "tags": [
+          "VirtualMachineClaimService"
+        ]
+      }
+    },
+    "/api/v2/virtualmachineclaims/{ID}": {
+      "get": {
+        "operationId": "VirtualMachineClaimService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachineClaim"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VirtualMachineClaimService"
+        ]
+      },
+      "delete": {
+        "operationId": "VirtualMachineClaimService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "VirtualMachineClaimService"
+        ]
+      }
+    },
+    "/api/v2/virtualmachineclaims/{Name}": {
+      "put": {
+        "operationId": "VirtualMachineClaimService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/VirtualMachineClaim"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/VirtualMachineClaim"
+            }
+          }
+        ],
+        "tags": [
+          "VirtualMachineClaimService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Empty": {
+      "type": "object"
+    },
+    "VirtualMachineClaim": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Spec": {
+          "$ref": "#/definitions/VirtualMachineClaimSpec"
+        },
+        "Status": {
+          "$ref": "#/definitions/VirtualMachineClaimStatus"
+        }
+      }
+    },
+    "VirtualMachineClaimList": {
+      "type": "object",
+      "properties": {
+        "VirtualMachineClaims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VirtualMachineClaim"
+          }
+        }
+      }
+    },
+    "VirtualMachineClaimSpec": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "UserId": {
+          "type": "string"
+        },
+        "RestrictedBind": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "RestrictedBindValue": {
+          "type": "string"
+        },
+        "VirtualMachines": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/VirtualMachineClaimVM"
+          }
+        },
+        "DynamicCapable": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "VirtualMachineClaimStatus": {
+      "type": "object",
+      "properties": {
+        "BindMode": {
+          "type": "string"
+        },
+        "StaticBindAttempts": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "DynamicBindRequestId": {
+          "type": "string"
+        },
+        "Bound": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "Ready": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "Tainted": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "VirtualMachineClaimVM": {
+      "type": "object",
+      "properties": {
+        "Template": {
+          "type": "string"
+        },
+        "VirtualMachineId": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

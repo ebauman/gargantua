@@ -4,7 +4,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+//proteus:generate
 type VmStatus string
+//proteus:generate
 type CapacityMode string
 
 const (
