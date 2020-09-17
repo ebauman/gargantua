@@ -9,14 +9,17 @@ require (
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+	github.com/golang/protobuf v1.4.1
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.1
 	github.com/gorilla/websocket v1.4.0
+	github.com/grpc-ecosystem/grpc-gateway v1.14.8
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rancher/terraform-controller v0.0.10-alpha1
 	github.com/rancher/wrangler v0.1.0
 	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876
-	google.golang.org/grpc v1.31.0
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
+	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/src-d/go-parse-utils.v1 v1.1.2 // indirect
 	gopkg.in/src-d/proteus.v1 v1.3.3 // indirect
