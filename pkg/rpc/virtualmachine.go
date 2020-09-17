@@ -5,8 +5,10 @@ import (
 	hfv1 "github.com/hobbyfarm/gargantua/pkg/apis/hobbyfarm.io/v1"
 	hfClientset "github.com/hobbyfarm/gargantua/pkg/client/clientset/versioned"
 	hfInformers "github.com/hobbyfarm/gargantua/pkg/client/informers/externalversions"
+	"github.com/hobbyfarm/gargantua/pkg/converters"
 	"github.com/hobbyfarm/gargantua/pkg/protobuf"
 	"google.golang.org/grpc"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -19,7 +21,7 @@ type VirtualMachineServer struct {
 	vmIndexer cache.Indexer
 }
 
-func NewVirtualMachineServer(g *grpc.Server, hfClientset *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) (*VirtualMachineServer, error) {
+func setupVirtualMachineServer(g *grpc.Server, hfClientset *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) (error) {
 	vms := &VirtualMachineServer{}
 
 	vms.hfClientSet = hfClientset
@@ -30,29 +32,59 @@ func NewVirtualMachineServer(g *grpc.Server, hfClientset *hfClientset.Clientset,
 	vms.vmIndexer = inf.GetIndexer()
 
 	protobuf.RegisterVirtualMachineServiceServer(g, vms)
+
+	return nil
 }
 
 func (vms *VirtualMachineServer) List(ctx context.Context, empty *protobuf.Empty) (*protobuf.VirtualMachineList, error) {
-
-	vmlist := &protobuf.VirtualMachineList{
-
+	list, err := vms.hfClientSet.HobbyfarmV1().VirtualMachines().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
 	}
+
+	convertedList := converters.ToVirtualMachineListRPC(list.Items)
+
+	return &protobuf.VirtualMachineList{VirtualMachines: convertedList}, nil
 }
 
 func (vms *VirtualMachineServer) Get(ctx context.Context, id *protobuf.ID) (*protobuf.VirtualMachine, error) {
-	panic("implement me")
+	obj, err := vms.hfClientSet.HobbyfarmV1().VirtualMachines().Get(id.ID, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	convertedObj := converters.ToVirtualMachineRPC(*obj)
+
+	return convertedObj, nil
 }
 
 func (vms *VirtualMachineServer) Create(ctx context.Context, machine *protobuf.VirtualMachine) (*protobuf.VirtualMachine, error) {
-	panic("implement me")
+	toCreate := converters.FromVirtualMachineRPC(machine)
+	res, err := vms.hfClientSet.HobbyfarmV1().VirtualMachines().Create(&toCreate)
+	if err != nil {
+		return nil, err
+	}
+
+	return converters.ToVirtualMachineRPC(*res), nil
 }
 
 func (vms *VirtualMachineServer) Update(ctx context.Context, machine *protobuf.VirtualMachine) (*protobuf.VirtualMachine, error) {
-	panic("implement me")
+	toUpdate := converters.FromVirtualMachineRPC(machine)
+	res, err := vms.hfClientSet.HobbyfarmV1().VirtualMachines().Update(&toUpdate)
+	if err != nil {
+		return nil, err
+	}
+
+	return converters.ToVirtualMachineRPC(*res), nil
 }
 
 func (vms *VirtualMachineServer) Delete(ctx context.Context, id *protobuf.ID) (*protobuf.Empty, error) {
-	panic("implement me")
+	err := vms.hfClientSet.HobbyfarmV1().VirtualMachines().Delete(id.ID, &metav1.DeleteOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func vmIdIndexer(obj interface{}) ([]string, error) {
