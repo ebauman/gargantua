@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"github.com/hobbyfarm/gargantua/pkg/rpc"
+	"google.golang.org/grpc"
+	"net"
 	"os"
 
 	"github.com/golang/glog"
@@ -31,6 +35,7 @@ import (
 	"github.com/hobbyfarm/gargantua/pkg/controllers/vmsetcontroller"
 	"github.com/hobbyfarm/gargantua/pkg/courseclient"
 	"github.com/hobbyfarm/gargantua/pkg/courseserver"
+	hfrest "github.com/hobbyfarm/gargantua/pkg/rest"
 	"github.com/hobbyfarm/gargantua/pkg/scenarioclient"
 	"github.com/hobbyfarm/gargantua/pkg/scenarioserver"
 	"github.com/hobbyfarm/gargantua/pkg/sessionserver"
@@ -309,6 +314,36 @@ func main() {
 		port = "80"
 	}
 	glog.Info("listening on " + port)
+
+	// setup grpc
+	rs := grpc.NewServer()
+
+	// setup listener
+	lis, err := net.Listen("tcp", ":9090")
+	if err != nil {
+		glog.Fatalf("error setting up grpc listener: %s", err)
+	}
+
+	// setup servers
+	rpcChan := make(chan bool)
+	go rpc.Setup(rs, rpcChan, hfClient, hfInformerFactory)
+	if err != nil {
+		glog.Fatalf("error setting up virtual machine server: %s", err)
+	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		<-rpcChan
+		err = rs.Serve(lis)
+		glog.Errorf("error in grpc server: %s", err)
+	}()
+
+	wg.Add(1)
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	go hfrest.Serve(ctx, &wg, "localhost:9090", ":9091")
 
 	go func() {
 		defer wg.Done()
