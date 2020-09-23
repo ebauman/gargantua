@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service SessionService {
+  rpc List(Empty) returns (SessionList) {
+    option(google.api.http) = {
+      get: "/api/v2/sessions";
+    };
+  }
+
+  rpc Get(ID) returns (Session) {
+    option(google.api.http) = {
+      get: "/api/v2/sessions/{ID}";
+    };
+  }
+
+  rpc Create(Session) returns (Session) {
+    option(google.api.http) = {
+      post: "/api/v2/sessions";
+      body: "*";
+    };
+  }
+
+  rpc Update(Session) returns (Session) {
+    option(google.api.http) = {
+      put: "/api/v2/sessions/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/sessions/{ID}";
+    };
+  }
+}
+
+message SessionList {
+  repeated Session Sessions = 1;
+}

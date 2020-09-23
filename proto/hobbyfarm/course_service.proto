@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service CourseService {
+  rpc List(Empty) returns (CourseList) {
+    option(google.api.http) = {
+      get: "/api/v2/courses";
+    };
+  }
+
+  rpc Get(ID) returns (Course) {
+    option(google.api.http) = {
+      get: "/api/v2/courses/{ID}";
+    };
+  }
+
+  rpc Create(Course) returns (Course) {
+    option(google.api.http) = {
+      post: "/api/v2/courses";
+      body: "*";
+    };
+  }
+
+  rpc Update(Course) returns (Course) {
+    option(google.api.http) = {
+      put: "/api/v2/courses/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/courses/{ID}";
+    };
+  }
+}
+
+message CourseList {
+  repeated Course Courses = 1;
+}

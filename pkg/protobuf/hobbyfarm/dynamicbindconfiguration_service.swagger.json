@@ -1,0 +1,271 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "hobbyfarm/dynamicbindconfiguration_service.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v2/dynamicbindconfigurations": {
+      "get": {
+        "operationId": "DynamicBindConfigurationService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindConfigurationList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DynamicBindConfigurationService"
+        ]
+      },
+      "post": {
+        "operationId": "DynamicBindConfigurationService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindConfiguration"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DynamicBindConfiguration"
+            }
+          }
+        ],
+        "tags": [
+          "DynamicBindConfigurationService"
+        ]
+      }
+    },
+    "/api/v2/dynamicbindconfigurations/{ID}": {
+      "get": {
+        "operationId": "DynamicBindConfigurationService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindConfiguration"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DynamicBindConfigurationService"
+        ]
+      },
+      "delete": {
+        "operationId": "DynamicBindConfigurationService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DynamicBindConfigurationService"
+        ]
+      }
+    },
+    "/api/v2/dynamicbindconfigurations/{Name}": {
+      "put": {
+        "operationId": "DynamicBindConfigurationService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindConfiguration"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DynamicBindConfiguration"
+            }
+          }
+        ],
+        "tags": [
+          "DynamicBindConfigurationService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "CMSStruct": {
+      "type": "object",
+      "properties": {
+        "CPU": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Memory": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Storage": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "DynamicBindConfiguration": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Spec": {
+          "$ref": "#/definitions/DynamicBindConfigurationSpec"
+        }
+      }
+    },
+    "DynamicBindConfigurationList": {
+      "type": "object",
+      "properties": {
+        "DynamicBindConfigurations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DynamicBindConfiguration"
+          }
+        }
+      }
+    },
+    "DynamicBindConfigurationSpec": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Environment": {
+          "type": "string"
+        },
+        "BaseName": {
+          "type": "string"
+        },
+        "RestrictedBind": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "RestrictedBindValue": {
+          "type": "string"
+        },
+        "BurstCountCapacity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "BurstCapacity": {
+          "$ref": "#/definitions/CMSStruct"
+        }
+      }
+    },
+    "Empty": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

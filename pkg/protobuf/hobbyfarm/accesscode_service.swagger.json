@@ -1,0 +1,262 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "hobbyfarm/accesscode_service.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v2/accesscodes": {
+      "get": {
+        "operationId": "AccessCodeService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/AccessCodeList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "AccessCodeService"
+        ]
+      },
+      "post": {
+        "operationId": "AccessCodeService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/AccessCode"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AccessCode"
+            }
+          }
+        ],
+        "tags": [
+          "AccessCodeService"
+        ]
+      }
+    },
+    "/api/v2/accesscodes/{ID}": {
+      "get": {
+        "operationId": "AccessCodeService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/AccessCode"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AccessCodeService"
+        ]
+      },
+      "delete": {
+        "operationId": "AccessCodeService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AccessCodeService"
+        ]
+      }
+    },
+    "/api/v2/accesscodes/{Name}": {
+      "put": {
+        "operationId": "AccessCodeService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/AccessCode"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AccessCode"
+            }
+          }
+        ],
+        "tags": [
+          "AccessCodeService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "AccessCode": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Spec": {
+          "$ref": "#/definitions/AccessCodeSpec"
+        }
+      }
+    },
+    "AccessCodeList": {
+      "type": "object",
+      "properties": {
+        "AccessCodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessCode"
+          }
+        }
+      }
+    },
+    "AccessCodeSpec": {
+      "type": "object",
+      "properties": {
+        "Code": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "Scenarios": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Courses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Expiration": {
+          "type": "string"
+        },
+        "VirtualMachineSets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "RestrictedBind": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "RestrictedBindValue": {
+          "type": "string"
+        }
+      }
+    },
+    "Empty": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

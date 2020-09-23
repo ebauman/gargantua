@@ -1,0 +1,267 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "hobbyfarm/dynamicbindrequest_service.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v2/dynamicbindrequests": {
+      "get": {
+        "operationId": "DynamicBindRequestService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindRequestList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DynamicBindRequestService"
+        ]
+      },
+      "post": {
+        "operationId": "DynamicBindRequestService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindRequest"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DynamicBindRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DynamicBindRequestService"
+        ]
+      }
+    },
+    "/api/v2/dynamicbindrequests/{ID}": {
+      "get": {
+        "operationId": "DynamicBindRequestService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindRequest"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DynamicBindRequestService"
+        ]
+      },
+      "delete": {
+        "operationId": "DynamicBindRequestService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DynamicBindRequestService"
+        ]
+      }
+    },
+    "/api/v2/dynamicbindrequests/{Name}": {
+      "put": {
+        "operationId": "DynamicBindRequestService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/DynamicBindRequest"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DynamicBindRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DynamicBindRequestService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "DynamicBindRequest": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Spec": {
+          "$ref": "#/definitions/DynamicBindRequestSpec"
+        },
+        "Status": {
+          "$ref": "#/definitions/DynamicBindRequestStatus"
+        }
+      }
+    },
+    "DynamicBindRequestList": {
+      "type": "object",
+      "properties": {
+        "DynamicBindRequests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DynamicBindRequest"
+          }
+        }
+      }
+    },
+    "DynamicBindRequestSpec": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "VirtualMachineClaim": {
+          "type": "string"
+        },
+        "Attempts": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "DynamicBindRequestStatus": {
+      "type": "object",
+      "properties": {
+        "CurrentAttempts": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Expired": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "Fulfilled": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "DynamicBindConfigurationId": {
+          "type": "string"
+        },
+        "VirtualMachineIds": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Empty": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

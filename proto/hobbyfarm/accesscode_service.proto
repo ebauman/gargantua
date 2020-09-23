@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service AccessCodeService {
+  rpc List(Empty) returns (AccessCodeList) {
+    option(google.api.http) = {
+      get: "/api/v2/accesscodes";
+    };
+  }
+
+  rpc Get(ID) returns (AccessCode) {
+    option(google.api.http) = {
+      get: "/api/v2/accesscodes/{ID}";
+    };
+  }
+
+  rpc Create(AccessCode) returns (AccessCode) {
+    option(google.api.http) = {
+      post: "/api/v2/accesscodes";
+      body: "*";
+    };
+  }
+
+  rpc Update(AccessCode) returns (AccessCode) {
+    option(google.api.http) = {
+      put: "/api/v2/accesscodes/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/accesscodes/{ID}";
+    };
+  }
+}
+
+message AccessCodeList {
+  repeated AccessCode AccessCodes = 1;
+}

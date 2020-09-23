@@ -15,7 +15,7 @@ func Serve(ctx context.Context, wg *sync.WaitGroup, grpcEndpoint string, httpEnd
 	mux := runtime.NewServeMux()
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := protobuf.RegisterVirtualMachineServiceHandlerFromEndpoint(ctx, mux, httpEndpoint, opts)
+	err := protobuf.RegisterVirtualMachineServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, opts)
 	if err != nil{
 		return err
 	}

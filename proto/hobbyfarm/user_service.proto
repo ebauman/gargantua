@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service UserService {
+  rpc List(Empty) returns (UserList) {
+    option(google.api.http) = {
+      get: "/api/v2/users";
+    };
+  }
+
+  rpc Get(ID) returns (User) {
+    option(google.api.http) = {
+      get: "/api/v2/users/{ID}";
+    };
+  }
+
+  rpc Create(User) returns (User) {
+    option(google.api.http) = {
+      post: "/api/v2/users";
+      body: "*";
+    };
+  }
+
+  rpc Update(User) returns (User) {
+    option(google.api.http) = {
+      put: "/api/v2/users/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/users/{ID}";
+    };
+  }
+}
+
+message UserList {
+  repeated User Users = 1;
+}

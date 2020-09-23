@@ -6,7 +6,7 @@ option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
 // protoc -Iproto/ --grpc-gateway_out=logtostderr=true,allow_delete_body=true:$GOPATH/src proto/hobbyfarm/*.proto
 // protoc -Iproto/ --swagger_out=logtostderr=true,allow_delete_body=true:./pkg/protobuf proto/hobbyfarm/*.proto
 
-// protoc --go_out=plugins=grpc:$GOPATH/src -Iproto/ proto/racepal/*.proto && protoc -Iproto/ --grpc-gateway_out=logtostderr=true,allow_delete_body=true:$GOPATH/src proto/racepal/*.proto && protoc -Iproto/ --swagger_out=logtostderr=true,allow_delete_body=true:./pkg/rpc proto/racepal/*.proto
+// protoc --go_out=plugins=grpc:$GOPATH/src -Iproto/ proto/hobbyfarm/*.proto && protoc -Iproto/ --grpc-gateway_out=logtostderr=true,allow_delete_body=true:$GOPATH/src proto/hobbyfarm/*.proto && protoc -Iproto/ --swagger_out=logtostderr=true,allow_delete_body=true:./pkg/protobuf proto/hobbyfarm/*.proto
 
 message Empty{
 }
@@ -111,7 +111,7 @@ message CMSStruct {
   int32 Storage = 3;
 }
 
-message Enviroment {
+message Environment {
   string Name = 1;
   EnvironmentSpec Spec = 2;
   EnvironmentStatus Status = 3;

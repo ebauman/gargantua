@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service DynamicBindRequestService {
+  rpc List(Empty) returns (DynamicBindRequestList) {
+    option(google.api.http) = {
+      get: "/api/v2/dynamicbindrequests";
+    };
+  }
+
+  rpc Get(ID) returns (DynamicBindRequest) {
+    option(google.api.http) = {
+      get: "/api/v2/dynamicbindrequests/{ID}";
+    };
+  }
+
+  rpc Create(DynamicBindRequest) returns (DynamicBindRequest) {
+    option(google.api.http) = {
+      post: "/api/v2/dynamicbindrequests";
+      body: "*";
+    };
+  }
+
+  rpc Update(DynamicBindRequest) returns (DynamicBindRequest) {
+    option(google.api.http) = {
+      put: "/api/v2/dynamicbindrequests/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/dynamicbindrequests/{ID}";
+    };
+  }
+}
+
+message DynamicBindRequestList {
+  repeated DynamicBindRequest DynamicBindRequests = 1;
+}

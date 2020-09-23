@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service VirtualMachineSetService {
+  rpc List(Empty) returns (VirtualMachineSetList) {
+    option(google.api.http) = {
+      get: "/api/v2/virtualmachinesets";
+    };
+  }
+
+  rpc Get(ID) returns (VirtualMachineSet) {
+    option(google.api.http) = {
+      get: "/api/v2/virtualmachinesets/{ID}";
+    };
+  }
+
+  rpc Create(VirtualMachineSet) returns (VirtualMachineSet) {
+    option(google.api.http) = {
+      post: "/api/v2/virtualmachinesets";
+      body: "*";
+    };
+  }
+
+  rpc Update(VirtualMachineSet) returns (VirtualMachineSet) {
+    option(google.api.http) = {
+      put: "/api/v2/virtualmachinesets/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/virtualmachinesets/{ID}";
+    };
+  }
+}
+
+message VirtualMachineSetList {
+  repeated VirtualMachineSet VirtualMachineSets = 1;
+}

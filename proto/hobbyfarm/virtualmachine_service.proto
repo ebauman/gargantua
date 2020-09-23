@@ -27,7 +27,7 @@ service VirtualMachineService {
 
   rpc Update(VirtualMachine) returns (VirtualMachine) {
     option(google.api.http) = {
-      put: "/api/v2/virtualmachines/{Name}"; // Must be Id not ID
+      put: "/api/v2/virtualmachines/{Name}";
       body: "*";
     };
   }

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	idIndex = "vms.hobbyfarm.io/id-index"
+	vmIdIndex = "vms.hobbyfarm.io/id-index"
 )
 
 type VirtualMachineServer struct {
@@ -27,7 +27,7 @@ func setupVirtualMachineServer(g *grpc.Server, hfClientset *hfClientset.Clientse
 	vms.hfClientSet = hfClientset
 
 	inf := hfInformerFactory.Hobbyfarm().V1().VirtualMachines().Informer()
-	indexers := map[string]cache.IndexFunc{idIndex: vmIdIndexer}
+	indexers := map[string]cache.IndexFunc{vmIdIndex: vmIdIndexer}
 	inf.AddIndexers(indexers)
 	vms.vmIndexer = inf.GetIndexer()
 
@@ -84,7 +84,7 @@ func (vms *VirtualMachineServer) Delete(ctx context.Context, id *protobuf.ID) (*
 		return nil, err
 	}
 
-	return nil, nil
+	return &protobuf.Empty{}, nil
 }
 
 func vmIdIndexer(obj interface{}) ([]string, error) {

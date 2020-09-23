@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service EnvironmentService {
+  rpc List(Empty) returns (EnvironmentList) {
+    option(google.api.http) = {
+      get: "/api/v2/environments";
+    };
+  }
+
+  rpc Get(ID) returns (Environment) {
+    option(google.api.http) = {
+      get: "/api/v2/environments/{ID}";
+    };
+  }
+
+  rpc Create(Environment) returns (Environment) {
+    option(google.api.http) = {
+      post: "/api/v2/environments";
+      body: "*";
+    };
+  }
+
+  rpc Update(Environment) returns (Environment) {
+    option(google.api.http) = {
+      put: "/api/v2/environments/{Name}";
+      body: "*";
+    };
+  }
+
+  rpc Delete(ID) returns (Empty) {
+    option(google.api.http) = {
+      delete: "/api/v2/environments/{ID}";
+    };
+  }
+}
+
+message EnvironmentList {
+  repeated Environment Environments = 1;
+}

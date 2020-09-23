@@ -1,0 +1,339 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "hobbyfarm/environment_service.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v2/environments": {
+      "get": {
+        "operationId": "EnvironmentService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/EnvironmentList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "EnvironmentService"
+        ]
+      },
+      "post": {
+        "operationId": "EnvironmentService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Environment"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Environment"
+            }
+          }
+        ],
+        "tags": [
+          "EnvironmentService"
+        ]
+      }
+    },
+    "/api/v2/environments/{ID}": {
+      "get": {
+        "operationId": "EnvironmentService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Environment"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "EnvironmentService"
+        ]
+      },
+      "delete": {
+        "operationId": "EnvironmentService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "EnvironmentService"
+        ]
+      }
+    },
+    "/api/v2/environments/{Name}": {
+      "put": {
+        "operationId": "EnvironmentService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Environment"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Environment"
+            }
+          }
+        ],
+        "tags": [
+          "EnvironmentService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "CMSStruct": {
+      "type": "object",
+      "properties": {
+        "CPU": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Memory": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Storage": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "CapacityMode": {
+      "type": "string",
+      "enum": [
+        "Raw",
+        "Count"
+      ],
+      "default": "Raw"
+    },
+    "Empty": {
+      "type": "object"
+    },
+    "Environment": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Spec": {
+          "$ref": "#/definitions/EnvironmentSpec"
+        },
+        "Status": {
+          "$ref": "#/definitions/EnvironmentStatus"
+        }
+      }
+    },
+    "EnvironmentList": {
+      "type": "object",
+      "properties": {
+        "Environments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Environment"
+          }
+        }
+      }
+    },
+    "EnvironmentSpec": {
+      "type": "object",
+      "properties": {
+        "DisplayName": {
+          "type": "string"
+        },
+        "DNSSuffix": {
+          "type": "string"
+        },
+        "Provider": {
+          "type": "string"
+        },
+        "TemplateMapping": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/StringMap"
+          }
+        },
+        "EnvironmentSpecifics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "IPTranslationMap": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "WsEndpoint": {
+          "type": "string"
+        },
+        "CapacityMode": {
+          "$ref": "#/definitions/CapacityMode"
+        },
+        "BurstCapable": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "CountCapacity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "Capacity": {
+          "$ref": "#/definitions/CMSStruct"
+        },
+        "BurstCountCapacity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "BurstCapacity": {
+          "$ref": "#/definitions/CMSStruct"
+        }
+      }
+    },
+    "EnvironmentStatus": {
+      "type": "object",
+      "properties": {
+        "Used": {
+          "$ref": "#/definitions/CMSStruct"
+        },
+        "AvailableCount": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "StringMap": {
+      "type": "object",
+      "properties": {
+        "Map": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "hobbyfarm/scheduledevent_service.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v2/scheduledevents": {
+      "get": {
+        "operationId": "ScheduledEventService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ScheduledEventList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "ScheduledEventService"
+        ]
+      },
+      "post": {
+        "operationId": "ScheduledEventService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ScheduledEvent"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ScheduledEvent"
+            }
+          }
+        ],
+        "tags": [
+          "ScheduledEventService"
+        ]
+      }
+    },
+    "/api/v2/scheduledevents/{ID}": {
+      "get": {
+        "operationId": "ScheduledEventService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ScheduledEvent"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ScheduledEventService"
+        ]
+      },
+      "delete": {
+        "operationId": "ScheduledEventService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ScheduledEventService"
+        ]
+      }
+    },
+    "/api/v2/scheduledevents/{Name}": {
+      "put": {
+        "operationId": "ScheduledEventService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ScheduledEvent"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ScheduledEvent"
+            }
+          }
+        ],
+        "tags": [
+          "ScheduledEventService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Empty": {
+      "type": "object"
+    },
+    "Int32Map": {
+      "type": "object",
+      "properties": {
+        "Map": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "ScheduledEvent": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Spec": {
+          "$ref": "#/definitions/ScheduledEventSpec"
+        },
+        "Status": {
+          "$ref": "#/definitions/ScheduledEventStatus"
+        }
+      }
+    },
+    "ScheduledEventList": {
+      "type": "object",
+      "properties": {
+        "ScheduledEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScheduledEvent"
+          }
+        }
+      }
+    },
+    "ScheduledEventSpec": {
+      "type": "object",
+      "properties": {
+        "Creator": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "StartTime": {
+          "type": "string"
+        },
+        "EndTime": {
+          "type": "string"
+        },
+        "RequiredVirtualMachines": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Int32Map"
+          }
+        },
+        "AccessCode": {
+          "type": "string"
+        },
+        "RestrictedBind": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "RestrictedBindValue": {
+          "type": "string"
+        },
+        "Scenarios": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Courses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ScheduledEventStatus": {
+      "type": "object",
+      "properties": {
+        "AccessCodeId": {
+          "type": "string"
+        },
+        "VirtualMachineSets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Active": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "Provisioned": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "Ready": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "Finished": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
