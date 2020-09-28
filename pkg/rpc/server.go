@@ -8,10 +8,17 @@ import (
 )
 
 func Setup(rpc *grpc.Server, setup chan bool, clientset *hfClientset.Clientset, factory hfInformers.SharedInformerFactory) error {
-	err := setupVirtualMachineServer(rpc, clientset, factory)
-	if err != nil {
-		return err
-	}
+	setupAccessCodeServer(rpc, clientset, factory)
+	setupCourseServer(rpc, clientset, factory)
+	setupDynamicBindConfigurationServer(rpc, clientset, factory)
+	setupDynamicBindRequestServer(rpc, clientset, factory)
+	setupEnvironmentServer(rpc, clientset)
+	setupScenarioServer(rpc, clientset, factory)
+	setupScheduledEventServer(rpc, clientset)
+	setupVirtualMachineServer(rpc, clientset, factory)
+	setupVirtualMachineClaimServer(rpc, clientset, factory)
+	setupVirtualMachineSetServer(rpc, clientset, factory)
+	setupVirtualMachineTemplateServer(rpc, clientset, factory)
 
 	reflection.Register(rpc) // TODO - should we have this? it is good for dev using grpcurl though
 

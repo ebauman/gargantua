@@ -15,9 +15,28 @@ func Serve(ctx context.Context, wg *sync.WaitGroup, grpcEndpoint string, httpEnd
 	mux := runtime.NewServeMux()
 
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := protobuf.RegisterVirtualMachineServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, opts)
-	if err != nil{
-		return err
+
+	registerFuncs := []func(context.Context, *runtime.ServeMux, string, []grpc.DialOption) error {
+		protobuf.RegisterAccessCodeServiceHandlerFromEndpoint,
+		protobuf.RegisterCourseServiceHandlerFromEndpoint,
+		protobuf.RegisterDynamicBindConfigurationServiceHandlerFromEndpoint,
+		protobuf.RegisterDynamicBindRequestServiceHandlerFromEndpoint,
+		protobuf.RegisterEnvironmentServiceHandlerFromEndpoint,
+		protobuf.RegisterScenarioServiceHandlerFromEndpoint,
+		protobuf.RegisterScheduledEventServiceHandlerFromEndpoint,
+		protobuf.RegisterSessionServiceHandlerFromEndpoint,
+		protobuf.RegisterUserServiceHandlerFromEndpoint,
+		protobuf.RegisterVirtualMachineServiceHandlerFromEndpoint,
+		protobuf.RegisterVirtualMachineClaimServiceHandlerFromEndpoint,
+		protobuf.RegisterVirtualMachineSetServiceHandlerFromEndpoint,
+		protobuf.RegisterVirtualMachineTemplateServiceHandlerFromEndpoint,
+	}
+
+	for _, f := range registerFuncs {
+		err := f(ctx, mux, grpcEndpoint, opts)
+		if err != nil {
+			return err
+		}
 	}
 
 	return http.ListenAndServe(httpEndpoint, mux)

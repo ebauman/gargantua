@@ -1,19 +1,24 @@
 module github.com/hobbyfarm/gargantua
 
-go 1.13.4
+go 1.13
 
 replace k8s.io/client-go => k8s.io/client-go v0.15.8
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/protobuf v1.4.1
+	github.com/golang/protobuf v1.4.2
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.1
 	github.com/gorilla/websocket v1.4.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/grpc-gateway v1.14.8
+	github.com/iancoleman/strcase v0.1.2 // indirect
+	github.com/jhump/protoreflect v1.7.0
+	github.com/lyft/protoc-gen-star v0.5.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rancher/terraform-controller v0.0.10-alpha1
 	github.com/rancher/wrangler v0.1.0

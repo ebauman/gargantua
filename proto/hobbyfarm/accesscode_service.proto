@@ -10,6 +10,7 @@ service AccessCodeService {
     option(google.api.http) = {
       get: "/api/v2/accesscodes";
     };
+    option(requires_admin) = true;
   }
 
   rpc Get(ID) returns (AccessCode) {

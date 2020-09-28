@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
+
+import "google/api/annotations.proto";
+import "hobbyfarm/hobbyfarm.proto";
+
+service AuthService {
+  rpc RegisterWithAccessCode(Registration) returns (Empty) {
+      option(google.api.http) = {
+        post: "/api/v2/auth/registerwithaccesscode";
+        body: "*";
+      };
+  }
+
+  rpc ListAccessCodes(Empty) returns (UserAccessCodes) {
+    option(google.api.http) = {
+      get: "/api/v2/auth/accesscodes";
+    };
+  }
+
+  rpc UpdateAccessCodes(UserAccessCodes) returns (UserAccessCodes) {
+    option(google.api.http) = {
+      put: "/api/v2/auth/accesscodes";
+      body: "*";
+    };
+  }
+
+  rpc ChangePassword(ChangePasswordRequest) returns (Status) {
+    option(google.api.http) = {
+      post: "/api/v2/auth/changepassword";
+      body: "*";
+    };
+  }
+
+  rpc Authenticate(Authentication) returns (Token) {
+    option(google.api.http) = {
+      post: "/api/v2/auth/authenticate";
+      body: "*";
+    };
+  }
+}
+
+message Token {
+  string Token = 1;
+}
+
+message Authentication {
+  string Email = 1;
+  string Password = 2;
+}
+
+message ChangePasswordRequest {
+  string OldPassword = 1;
+  string NewPassword = 2;
+}
+
+message UserAccessCodes {
+  repeated string AccessCodes = 1;
+}
+
+message Registration {
+  string Email = 1;
+  string AccessCode = 2;
+  string Password = 3;
+}

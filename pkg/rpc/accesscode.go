@@ -64,7 +64,7 @@ func (a AccessCodeServer) Get(ctx context.Context, id *protobuf.ID) (*protobuf.A
 
 	accessCode, ok := obj[0].(*hfv1.AccessCode)
 	if !ok {
-		return nil, status.Errorf(codes.Internal, "error asserting access code into hfv1.AccessCode: %v", err)
+		return nil, status.Error(codes.Internal, "error asserting access code into hfv1.AccessCode")
 	}
 
 	return converters.AccessCodeToRPC(*accessCode), nil

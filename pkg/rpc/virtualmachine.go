@@ -21,7 +21,7 @@ type VirtualMachineServer struct {
 	vmIndexer cache.Indexer
 }
 
-func setupVirtualMachineServer(g *grpc.Server, hfClientset *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) (error) {
+func setupVirtualMachineServer(g *grpc.Server, hfClientset *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) {
 	vms := &VirtualMachineServer{}
 
 	vms.hfClientSet = hfClientset
@@ -32,8 +32,6 @@ func setupVirtualMachineServer(g *grpc.Server, hfClientset *hfClientset.Clientse
 	vms.vmIndexer = inf.GetIndexer()
 
 	protobuf.RegisterVirtualMachineServiceServer(g, vms)
-
-	return nil
 }
 
 func (vms *VirtualMachineServer) List(ctx context.Context, empty *protobuf.Empty) (*protobuf.VirtualMachineList, error) {

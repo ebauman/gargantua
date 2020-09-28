@@ -3,14 +3,23 @@ package converters
 import (
 	hfv1 "github.com/hobbyfarm/gargantua/pkg/apis/hobbyfarm.io/v1"
 	"github.com/hobbyfarm/gargantua/pkg/protobuf"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func ScenarioFromRPC(req *protobuf.Scenario) hfv1.Scenario {
-
+	return hfv1.Scenario{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: req.Name,
+		},
+		Spec:       ScenarioSpecFromRPC(req.Spec),
+	}
 }
 
 func ScenarioToRPC(req hfv1.Scenario) *protobuf.Scenario {
-
+	return &protobuf.Scenario{
+		Name: req.Name,
+		Spec: ScenarioSpecToRPC(req.Spec),
+	}
 }
 
 func ScenarioSpecFromRPC(req *protobuf.ScenarioSpec) hfv1.ScenarioSpec {

@@ -3,10 +3,17 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/hobbyfarm/gargantua/pkg/rpc"
+	"github.com/hobbyfarm/gargantua/pkg/rpc/interceptors"
+	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc"
 	"net"
 	"os"
+
+	"github.com/jhump/protoreflect/desc"
 
 	"github.com/golang/glog"
 	"github.com/gorilla/handlers"
@@ -315,8 +322,17 @@ func main() {
 	}
 	glog.Info("listening on " + port)
 
+	methods := map[string]*desc.MethodDescriptor{}
+
+	methInt := interceptors.MethodInterceptor(&methods)
+
 	// setup grpc
-	rs := grpc.NewServer()
+	rs := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			grpc_middleware.ChainUnaryServer(
+				methInt,
+				interceptors.UnaryAuthInterceptor,
+				grpc_validator.UnaryServerInterceptor())))
 
 	// setup listener
 	lis, err := net.Listen("tcp", ":9090")
@@ -335,6 +351,16 @@ func main() {
 	go func() {
 		defer wg.Done()
 		<-rpcChan
+		sds, err := grpcreflect.LoadServiceDescriptors(rs)
+		if err != nil {
+			glog.Errorf("error loading service descriptors: %s", err)
+		}
+		for _, sd := range sds {
+			for _, md := range sd.GetMethods() {
+				methodName := fmt.Sprintf("/%s/%s", sd.GetFullyQualifiedName(), md.GetName())
+				methods[methodName] = md
+			}
+		}
 		err = rs.Serve(lis)
 		glog.Errorf("error in grpc server: %s", err)
 	}()

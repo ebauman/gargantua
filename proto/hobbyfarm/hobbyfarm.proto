@@ -2,13 +2,26 @@ syntax = "proto3";
 
 option go_package = "github.com/hobbyfarm/gargantua/pkg/protobuf";
 
+import "validate/validate.proto";
+import "google/protobuf/descriptor.proto";
+
+// linux generation
 // protoc --go_out=plugins=grpc:$GOPATH/src -Iproto/ proto/hobbyfarm/*.proto
 // protoc -Iproto/ --grpc-gateway_out=logtostderr=true,allow_delete_body=true:$GOPATH/src proto/hobbyfarm/*.proto
 // protoc -Iproto/ --swagger_out=logtostderr=true,allow_delete_body=true:./pkg/protobuf proto/hobbyfarm/*.proto
+// protoc -Iproto/ --validate_out=lang=go:./pkg/protobuf proto/hobbyfarm/*.proto
 
 // protoc --go_out=plugins=grpc:$GOPATH/src -Iproto/ proto/hobbyfarm/*.proto && protoc -Iproto/ --grpc-gateway_out=logtostderr=true,allow_delete_body=true:$GOPATH/src proto/hobbyfarm/*.proto && protoc -Iproto/ --swagger_out=logtostderr=true,allow_delete_body=true:./pkg/protobuf proto/hobbyfarm/*.proto
 
+extend google.protobuf.MethodOptions {
+  bool requires_admin = 5000;
+}
+
 message Empty{
+}
+
+message Status {
+  bool Status = 1;
 }
 
 message StringMap {
@@ -228,11 +241,11 @@ message SessionStatus {
 
 message AccessCode {
   string Name = 1;
-  AccessCodeSpec Spec = 2;
+  AccessCodeSpec Spec = 2 [(validate.rules).message.required = true];
 }
 
 message AccessCodeSpec {
-  string Code = 1;
+  string Code = 1 [(validate.rules).string.min_len = 4];
   string Description = 2;
   repeated string Scenarios = 3;
   repeated string Courses = 4;

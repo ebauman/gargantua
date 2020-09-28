@@ -21,7 +21,7 @@ type VirtualMachineClaimServer struct {
 	vmClaimIndexer cache.Indexer
 }
 
-func setupVirtualMachineClaimServer(g *grpc.Server, hfClientset *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) error {
+func setupVirtualMachineClaimServer(g *grpc.Server, hfClientset *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) {
 	vmcs := &VirtualMachineClaimServer{}
 
 	vmcs.hfClientSet = hfClientset
@@ -32,8 +32,6 @@ func setupVirtualMachineClaimServer(g *grpc.Server, hfClientset *hfClientset.Cli
 	vmcs.vmClaimIndexer = inf.GetIndexer()
 
 	protobuf.RegisterVirtualMachineClaimServiceServer(g, vmcs)
-
-	return nil
 }
 
 func (v VirtualMachineClaimServer) List(ctx context.Context, empty *protobuf.Empty) (*protobuf.VirtualMachineClaimList, error) {

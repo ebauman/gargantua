@@ -16,3 +16,6 @@ artifacts/testing
 
 # docker-compose enviornment variables
 /.env
+
+# kubeconfig for local testing
+kubeconfig.yaml
