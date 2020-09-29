@@ -1,4 +1,4 @@
-package authclient
+package auth
 
 import (
 	"fmt"
@@ -9,24 +9,26 @@ import (
 	hfInformers "github.com/hobbyfarm/gargantua/pkg/client/informers/externalversions"
 	"k8s.io/client-go/tools/cache"
 	"net/http"
-	"strings"
 )
 
 const (
-	emailIndex = "authc.hobbyfarm.io/user-email-index"
+	emailIndex = "authclient.hobbyfarm.io/user-email-index"
 )
 
 type AuthClient struct {
-	hfClientSet *hfClientset.Clientset
+	hfClientset *hfClientset.Clientset
 	userIndexer cache.Indexer
 }
 
-func NewAuthClient(hfClientSet *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) (*AuthClient, error) {
+func New(hfClientset *hfClientset.Clientset, factory hfInformers.SharedInformerFactory) (*AuthClient, error) {
 	a := AuthClient{}
-	a.hfClientSet = hfClientSet
-	inf := hfInformerFactory.Hobbyfarm().V1().Users().Informer()
+	a.hfClientset = hfClientset
+	inf := factory.Hobbyfarm().V1().Users().Informer()
 	indexers := map[string]cache.IndexFunc{emailIndex: emailIndexer}
-	inf.AddIndexers(indexers)
+	err := inf.AddIndexers(indexers)
+	if err != nil {
+		return nil, err
+	}
 	a.userIndexer = inf.GetIndexer()
 	return &a, nil
 }
@@ -74,7 +76,9 @@ func (a AuthClient) AuthWS(w http.ResponseWriter, r *http.Request) (hfv1.User, e
 	return a.performAuth(token, false)
 }
 
-// if admin is true then check if user is an admin
+func (a AuthClient) AuthN(token string, admin bool) (hfv1.User, error) {
+	return a.performAuth(token, admin)
+}
 
 func (a AuthClient) performAuth(token string, admin bool) (hfv1.User, error) {
 	//glog.V(2).Infof("token passed in was: %s", token)
@@ -98,40 +102,6 @@ func (a AuthClient) performAuth(token string, admin bool) (hfv1.User, error) {
 	}
 	//util.ReturnHTTPMessage(w, r, 200, "success", "test successful. valid token")
 	return user, nil
-}
-
-func (a AuthClient) AuthN(w http.ResponseWriter, r *http.Request) (hfv1.User, error) {
-	token := r.Header.Get("Authorization")
-
-	if len(token) == 0 {
-		glog.Errorf("no bearer token passed")
-		//util.ReturnHTTPMessage(w, r, 403, "forbidden", "no token passed")
-		return hfv1.User{}, fmt.Errorf("authentication failed")
-	}
-
-	var finalToken string
-
-	splitToken := strings.Split(token, "Bearer")
-	finalToken = strings.TrimSpace(splitToken[1])
-
-	return a.performAuth(finalToken, false)
-}
-
-func (a AuthClient) AuthNAdmin(w http.ResponseWriter, r *http.Request) (hfv1.User, error) {
-	token := r.Header.Get("Authorization")
-
-	if len(token) == 0 {
-		glog.Errorf("no bearer token passed")
-		//util.ReturnHTTPMessage(w, r, 403, "forbidden", "no token passed")
-		return hfv1.User{}, fmt.Errorf("authentication failed")
-	}
-
-	var finalToken string
-
-	splitToken := strings.Split(token, "Bearer")
-	finalToken = strings.TrimSpace(splitToken[1])
-
-	return a.performAuth(finalToken, true)
 }
 
 func (a AuthClient) ValidateJWT(tokenString string) (hfv1.User, error) {

@@ -6,11 +6,12 @@ import "google/api/annotations.proto";
 import "hobbyfarm/hobbyfarm.proto";
 
 service AuthService {
-  rpc RegisterWithAccessCode(Registration) returns (Empty) {
+  rpc RegisterWithAccessCode(Registration) returns (RegistrationResponse) {
       option(google.api.http) = {
         post: "/api/v2/auth/registerwithaccesscode";
         body: "*";
       };
+      option(bypass_auth) = true;
   }
 
   rpc ListAccessCodes(Empty) returns (UserAccessCodes) {
@@ -38,11 +39,16 @@ service AuthService {
       post: "/api/v2/auth/authenticate";
       body: "*";
     };
+    option(bypass_auth) = true;
   }
 }
 
 message Token {
   string Token = 1;
+}
+
+message RegistrationResponse {
+  bool AccessCodeSuccessful = 2;
 }
 
 message Authentication {
@@ -60,7 +66,7 @@ message UserAccessCodes {
 }
 
 message Registration {
-  string Email = 1;
+  string Email = 1; // TODO - add validation here.
   string AccessCode = 2;
   string Password = 3;
 }

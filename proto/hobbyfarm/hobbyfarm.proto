@@ -15,6 +15,7 @@ import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MethodOptions {
   bool requires_admin = 5000;
+  bool bypass_auth = 5001;
 }
 
 message Empty{

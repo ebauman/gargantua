@@ -6,6 +6,7 @@ import (
 	"fmt"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	"github.com/hobbyfarm/gargantua/pkg/auth"
 	"github.com/hobbyfarm/gargantua/pkg/rpc"
 	"github.com/hobbyfarm/gargantua/pkg/rpc/interceptors"
 	"github.com/jhump/protoreflect/grpcreflect"
@@ -326,12 +327,19 @@ func main() {
 
 	methInt := interceptors.MethodInterceptor(&methods)
 
+	ac, err := auth.New(hfClient, hfInformerFactory)
+	if err != nil {
+		glog.Fatalf("error setting up auth client: %s", err)
+	}
+
+	ai := interceptors.NewAuthInterceptor(ac)
+
 	// setup grpc
 	rs := grpc.NewServer(
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
 				methInt,
-				interceptors.UnaryAuthInterceptor,
+				ai.GetInterceptor(),
 				grpc_validator.UnaryServerInterceptor())))
 
 	// setup listener

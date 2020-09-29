@@ -134,7 +134,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/Empty"
+              "$ref": "#/definitions/RegistrationResponse"
             }
           },
           "default": {
@@ -183,9 +183,6 @@
         }
       }
     },
-    "Empty": {
-      "type": "object"
-    },
     "Registration": {
       "type": "object",
       "properties": {
@@ -197,6 +194,15 @@
         },
         "Password": {
           "type": "string"
+        }
+      }
+    },
+    "RegistrationResponse": {
+      "type": "object",
+      "properties": {
+        "AccessCodeSuccessful": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
