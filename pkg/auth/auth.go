@@ -9,6 +9,7 @@ import (
 	hfInformers "github.com/hobbyfarm/gargantua/pkg/client/informers/externalversions"
 	"k8s.io/client-go/tools/cache"
 	"net/http"
+	"time"
 )
 
 const (
@@ -41,7 +42,7 @@ func emailIndexer(obj interface{}) ([]string, error) {
 	return []string{user.Spec.Email}, nil
 }
 
-func (a AuthClient) getUserByEmail(email string) (hfv1.User, error) {
+func (a AuthClient) GetUserByEmail(email string) (hfv1.User, error) {
 	if len(email) == 0 {
 		return hfv1.User{}, fmt.Errorf("email passed in was empty")
 	}
@@ -113,7 +114,7 @@ func (a AuthClient) ValidateJWT(tokenString string) (hfv1.User, error) {
 		var user hfv1.User
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			var err error
-			user, err = a.getUserByEmail(fmt.Sprint(claims["email"]))
+			user, err = a.GetUserByEmail(fmt.Sprint(claims["email"]))
 			if err != nil {
 				glog.Errorf("could not find user that matched token %s", fmt.Sprint(claims["email"]))
 				return hfv1.User{}, fmt.Errorf("could not find user that matched token %s", fmt.Sprint(claims["email"]))
@@ -129,7 +130,7 @@ func (a AuthClient) ValidateJWT(tokenString string) (hfv1.User, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		user, err := a.getUserByEmail(fmt.Sprint(claims["email"]))
+		user, err := a.GetUserByEmail(fmt.Sprint(claims["email"]))
 		if err != nil {
 			return hfv1.User{}, err
 		} else {
@@ -138,4 +139,21 @@ func (a AuthClient) ValidateJWT(tokenString string) (hfv1.User, error) {
 	}
 	glog.Errorf("error while validating user")
 	return hfv1.User{}, fmt.Errorf("error while validating user")
+}
+
+func (a AuthClient) GenerateJWT(user hfv1.User) (string, error) {
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": user.Spec.Email,
+		"nbf":   time.Now().Unix(),                     // not valid before now
+		"exp":   time.Now().Add(time.Hour * 24).Unix(), // expire in 24 hours
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(user.Spec.Password))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }

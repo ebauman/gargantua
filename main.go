@@ -334,7 +334,7 @@ func main() {
 
 	ai := interceptors.NewAuthInterceptor(ac)
 
-	// setup grpc
+	// setup grpcg
 	rs := grpc.NewServer(
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(

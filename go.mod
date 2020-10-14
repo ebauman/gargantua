@@ -6,7 +6,7 @@ replace k8s.io/client-go => k8s.io/client-go v0.15.8
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/ebauman/protoc-gen-validate v0.4.2 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b

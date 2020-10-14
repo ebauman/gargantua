@@ -3,6 +3,7 @@ package interceptors
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/hobbyfarm/gargantua/pkg/auth"
 	"github.com/hobbyfarm/gargantua/pkg/protobuf"
@@ -99,7 +100,9 @@ func retrieveRequiresAdmin(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	proto.HasExtension(opts, protobuf.E_RequiresAdmin)
+	if !proto.HasExtension(opts, protobuf.E_RequiresAdmin) {
+		return false, fmt.Errorf("extension 'requires-admin' not found on method")
+	}
 	val := proto.GetExtension(opts, protobuf.E_RequiresAdmin)
 	return coerceBool(val)
 }
@@ -110,7 +113,9 @@ func bypassAuth(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	proto.HasExtension(opts, protobuf.E_BypassAuth)
+	if !proto.HasExtension(opts, protobuf.E_BypassAuth) {
+		return false, fmt.Errorf("extension 'bypass-auth' not found on method")
+	}
 	val := proto.GetExtension(opts, protobuf.E_BypassAuth)
 	return coerceBool(val)
 }

@@ -70,20 +70,96 @@ func (a AuthServer) RegisterWithAccessCode(ctx context.Context, registration *pr
 	return &protobuf.RegistrationResponse{AccessCodeSuccessful: accessCodeSuccessful}, nil
 }
 
-func (a AuthServer) ListAccessCodes(ctx context.Context, empty *protobuf.Empty) (*protobuf.UserAccessCodes, error) {
-	panic("implement me")
+func (a AuthServer) ListAccessCodes(ctx context.Context, _ *protobuf.Empty) (*protobuf.UserAccessCodes, error) {
+	user, err := getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	latestUser, err := a.hfClientset.HobbyfarmV1().Users().Get(user, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return &protobuf.UserAccessCodes{AccessCodes: latestUser.Spec.AccessCodes}, nil
 }
 
 func (a AuthServer) UpdateAccessCodes(ctx context.Context, codes *protobuf.UserAccessCodes) (*protobuf.UserAccessCodes, error) {
-	panic("implement me")
+	user, err := getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	latestUser, err := a.hfClientset.HobbyfarmV1().Users().Get(user, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	latestUser.Spec.AccessCodes = codes.AccessCodes
+
+	_, err = a.hfClientset.HobbyfarmV1().Users().Update(latestUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return &protobuf.UserAccessCodes{AccessCodes: latestUser.Spec.AccessCodes}, nil
 }
 
 func (a AuthServer) ChangePassword(ctx context.Context, request *protobuf.ChangePasswordRequest) (*protobuf.Status, error) {
-	panic("implement me")
+	user, err := getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	latestUser, err := a.hfClientset.HobbyfarmV1().Users().Get(user, metav1.GetOptions{})
+	if err != nil {
+		glog.Errorf("error retrieving user: %v", err)
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(latestUser.Spec.Password), []byte(request.OldPassword))
+	if err != nil {
+		glog.Errorf("old password incorrect for user %s: %v", user, err)
+		return nil, status.Error(codes.InvalidArgument, "bad password")
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		glog.Errorf("error hashing password for user %s: %v", user, err)
+		return nil, status.Error(codes.Internal, "error creating new password")
+	}
+
+	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		latestUser.Spec.Password = string(passwordHash)
+		_, updateErr := a.hfClientset.HobbyfarmV1().Users().Update(latestUser)
+		return updateErr
+	})
+
+	if retryErr != nil {
+		return nil, retryErr
+	}
+
+	return &protobuf.Status{Status: true}, nil
 }
 
 func (a AuthServer) Authenticate(ctx context.Context, authentication *protobuf.Authentication) (*protobuf.Token, error) {
-	panic("implement me")
+	user, err := a.authClient.GetUserByEmail(authentication.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Spec.Password), []byte(authentication.Password))
+	if err != nil {
+		glog.Errorf("password incorrect for user %s: %v", user.Name, err)
+		return nil, status.Error(codes.Unauthenticated, "authentication failed")
+	}
+
+	token, err := a.authClient.GenerateJWT(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &protobuf.Token{Token: token}, nil
 }
 
 func (a AuthServer) newUser(email string, password string) (string, error) {

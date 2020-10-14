@@ -8,7 +8,14 @@ import "hobbyfarm/hobbyfarm.proto";
 service CourseService {
   rpc List(Empty) returns (CourseList) {
     option(google.api.http) = {
-      get: "/api/v2/courses";
+      get: "/api/v2/courses/all"; // show all courses, admins only
+    };
+    option(requires_admin) = true;
+  }
+
+  rpc ListForAccessCode(Empty) returns (CourseList) {
+    option(google.api.http) = {
+      get: "/api/v2/courses"; // show courses only corresponding to user access codes
     };
   }
 
@@ -30,12 +37,14 @@ service CourseService {
       put: "/api/v2/courses/{Name}";
       body: "*";
     };
+    option(requires_admin) = true;
   }
 
   rpc Delete(ID) returns (Empty) {
     option(google.api.http) = {
       delete: "/api/v2/courses/{ID}";
     };
+    option(requires_admin) = true;
   }
 }
 

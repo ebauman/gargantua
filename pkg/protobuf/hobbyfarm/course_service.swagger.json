@@ -13,7 +13,7 @@
   "paths": {
     "/api/v2/courses": {
       "get": {
-        "operationId": "CourseService_List",
+        "operationId": "CourseService_ListForAccessCode",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -58,6 +58,28 @@
             }
           }
         ],
+        "tags": [
+          "CourseService"
+        ]
+      }
+    },
+    "/api/v2/courses/all": {
+      "get": {
+        "operationId": "CourseService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CourseList"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
         "tags": [
           "CourseService"
         ]
