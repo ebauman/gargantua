@@ -23,6 +23,8 @@ import (
 
 const (
 	ssIndex            = "sss.hobbyfarm.io/session-id-index"
+	ssUserIndex		   = "sss.hobbyfarm.io/session-user-index"
+	userLabel  		   = "hobbyfarm.io/user"
 	newSSTimeout       = "5m"
 	keepaliveSSTimeout = "5m"
 	pauseSSTimeout     = "2h"
@@ -38,6 +40,11 @@ type SessionServer struct {
 	ssIndexer        cache.Indexer
 }
 
+type PreparedSession struct {
+	hfv1.SessionSpec
+	hfv1.SessionStatus
+}
+
 func NewSessionServer(authClient *authclient.AuthClient, accessCodeClient *accesscode.AccessCodeClient, scenarioClient *scenarioclient.ScenarioClient, courseClient *courseclient.CourseClient, hfClientSet *hfClientset.Clientset, hfInformerFactory hfInformers.SharedInformerFactory) (*SessionServer, error) {
 	a := SessionServer{}
 	a.hfClientSet = hfClientSet
@@ -46,7 +53,7 @@ func NewSessionServer(authClient *authclient.AuthClient, accessCodeClient *acces
 	a.auth = authClient
 	a.accessCodeClient = accessCodeClient
 	inf := hfInformerFactory.Hobbyfarm().V1().Sessions().Informer()
-	indexers := map[string]cache.IndexFunc{ssIndex: ssIdIndexer}
+	indexers := map[string]cache.IndexFunc{ssIndex: ssIdIndexer, ssUserIndex: userIdIndexer}
 	inf.AddIndexers(indexers)
 	a.ssIndexer = inf.GetIndexer()
 	return &a, nil
@@ -59,6 +66,11 @@ func (sss SessionServer) SetupRoutes(r *mux.Router) {
 	r.HandleFunc("/session/{session_id}/keepalive", sss.KeepAliveSessionFunc).Methods("PUT")
 	r.HandleFunc("/session/{session_id}/pause", sss.PauseSessionFunc).Methods("PUT")
 	r.HandleFunc("/session/{session_id}/resume", sss.ResumeSessionFunc).Methods("PUT")
+	r.HandleFunc("/a/session/activecount", sss.ActiveCount).Methods("GET")
+	r.HandleFunc("/a/session/list/{user_id}", sss.ListForUser).Methods("GET")
+	r.HandleFunc("/a/session/{session_id}/finished", sss.AdminFinishedSessionFunc).Methods("PUT")
+	r.HandleFunc("/a/session/{session_id}/pause", sss.AdminPauseSessionFunc).Methods("PUT")
+	r.HandleFunc("/a/session/{session_id}/resume", sss.AdminResumeSessionFunc).Methods("PUT")
 	glog.V(2).Infof("set up routes for session server")
 }
 
@@ -198,6 +210,10 @@ func (sss SessionServer) NewSessionFunc(w http.ResponseWriter, r *http.Request) 
 	session.Spec.ScenarioId = scenario.Spec.Id
 	session.Spec.UserId = user.Spec.Id
 
+	session.ObjectMeta.Labels = map[string]string{
+		userLabel: user.Spec.Id,
+	}
+
 	var vms []map[string]string
 	if course.Spec.VirtualMachines != nil {
 		vms = course.Spec.VirtualMachines
@@ -293,12 +309,57 @@ func (sss SessionServer) FinishedSessionFunc(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	err = sss.finishSession(ss)
+	if err != nil {
+		glog.Errorf("error finishing session with id %s: %s", sessionId, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error finishing session")
+		return
+	}
+
+	util.ReturnHTTPMessage(w, r, 200, "updated", "updated session")
+	return
+}
+
+func (sss SessionServer) AdminFinishedSessionFunc(w http.ResponseWriter, r *http.Request) {
+	_, err := sss.auth.AuthNAdmin(w, r)
+	if err != nil {
+		util.ReturnHTTPMessage(w, r, 403, "forbidden", "no access to list sessions")
+		return
+	}
+
+	vars := mux.Vars(r)
+	sessionId := vars["session_id"]
+
+	if len(sessionId) == 0 {
+		util.ReturnHTTPMessage(w, r, 400, "error", "invalid session id")
+		return
+	}
+
+	ss, err := sss.GetSessionById(sessionId)
+	if err != nil {
+		glog.Errorf("error retrieving session with id %s: %s", sessionId, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error retrieving session")
+		return
+	}
+
+	err = sss.finishSession(ss)
+	if err != nil {
+		glog.Errorf("error finishing session with id %s: %s", sessionId, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error finishing session")
+		return
+	}
+
+	util.ReturnHTTPMessage(w, r, 200, "updated", "updated session")
+	return
+}
+
+func (sss SessionServer) finishSession(s hfv1.Session) (error) {
 	now := time.Now().Format(time.UnixDate)
 
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		result, getErr := sss.hfClientSet.HobbyfarmV1().Sessions().Get(sessionId, metav1.GetOptions{})
+		result, getErr := sss.hfClientSet.HobbyfarmV1().Sessions().Get(s.Name, metav1.GetOptions{})
 		if getErr != nil {
-			return fmt.Errorf("error retrieving latest version of session %s: %v", sessionId, getErr)
+			return fmt.Errorf("error retrieving latest version of session %s: %v", s.Name, getErr)
 		}
 
 		result.Status.ExpirationTime = now
@@ -312,13 +373,10 @@ func (sss SessionServer) FinishedSessionFunc(w http.ResponseWriter, r *http.Requ
 	})
 
 	if retryErr != nil {
-		glog.Errorf("error creating session %v", err)
-		util.ReturnHTTPMessage(w, r, 500, "error", "something happened")
-		return
+		return retryErr
 	}
 
-	util.ReturnHTTPMessage(w, r, 200, "updated", "updated session")
-	return
+	return nil
 }
 
 func (sss SessionServer) KeepAliveSessionFunc(w http.ResponseWriter, r *http.Request) {
@@ -443,30 +501,70 @@ func (sss SessionServer) PauseSessionFunc(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	err = sss.pauseSession(ss)
+	if err != nil {
+		glog.Errorf("error pausing session %s: %s", sessionId, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error pausing session")
+		return
+	}
+
+	util.ReturnHTTPMessage(w, r, 204, "updated", "updated session")
+	return
+}
+
+func (sss SessionServer) AdminPauseSessionFunc(w http.ResponseWriter, r *http.Request) {
+	_, err := sss.auth.AuthNAdmin(w, r)
+	if err != nil {
+		util.ReturnHTTPMessage(w, r, 403, "forbidden", "no access to list sessions")
+		return
+	}
+
+	vars := mux.Vars(r)
+	sessionId := vars["session_id"]
+
+	if len(sessionId) == 0 {
+		util.ReturnHTTPMessage(w, r, 400, "error", "invalid session id")
+		return
+	}
+
+	ss, err := sss.GetSessionById(sessionId)
+	if err != nil {
+		glog.Errorf("error retrieving session with id %s: %s", sessionId, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error retrieving session")
+		return
+	}
+
+	err = sss.pauseSession(ss)
+	if err != nil {
+		glog.Errorf("error pausing session %s: %s", sessionId, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error pausing session")
+		return
+	}
+
+	util.ReturnHTTPMessage(w, r, 204, "updated", "updated session")
+	return
+}
+
+func (sss SessionServer) pauseSession(s hfv1.Session) error {
 	var course hfv1.Course
 	var scenario hfv1.Scenario
+	var err error
 
-	if ss.Spec.CourseId != "" {
-		course, err = sss.courseClient.GetCourseById(ss.Spec.CourseId)
+	if s.Spec.CourseId != "" {
+		course, err = sss.courseClient.GetCourseById(s.Spec.CourseId)
 		if err != nil {
-			glog.Errorf("error retrieving course %v", err)
-			util.ReturnHTTPMessage(w, r, 500, "error", "error getting course")
-			return
+			return err
 		}
 	}
-	if ss.Spec.ScenarioId != "" {
-		scenario, err = sss.scenarioClient.GetScenarioById(ss.Spec.ScenarioId)
+	if s.Spec.ScenarioId != "" {
+		scenario, err = sss.scenarioClient.GetScenarioById(s.Spec.ScenarioId)
 		if err != nil {
-			glog.Errorf("error retrieving scenario %v", err)
-			util.ReturnHTTPMessage(w, r, 500, "error", "error getting scenario")
-			return
+			return err
 		}
 	}
 
 	if !course.Spec.Pauseable && !scenario.Spec.Pauseable {
-		glog.Errorf("session is not pauseable %s", course.Spec.Id)
-		util.ReturnHTTPMessage(w, r, 500, "error", "not pauseable")
-		return
+		return fmt.Errorf("session is not pauseable, course (%s) or session (%s) does not allow it", course.Spec.Id, scenario.Spec.Id)
 	}
 
 	var ssTimeout string
@@ -485,9 +583,9 @@ func (sss SessionServer) PauseSessionFunc(w http.ResponseWriter, r *http.Request
 	pauseExpiration := now.Add(duration).Format(time.UnixDate)
 
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		result, getErr := sss.hfClientSet.HobbyfarmV1().Sessions().Get(sessionId, metav1.GetOptions{})
+		result, getErr := sss.hfClientSet.HobbyfarmV1().Sessions().Get(s.Name, metav1.GetOptions{})
 		if getErr != nil {
-			return fmt.Errorf("error retrieving latest version of session %s: %v", sessionId, getErr)
+			return fmt.Errorf("error retrieving latest version of session %s: %v", s.Name, getErr)
 		}
 
 		result.Status.PausedTime = pauseExpiration
@@ -500,13 +598,10 @@ func (sss SessionServer) PauseSessionFunc(w http.ResponseWriter, r *http.Request
 	})
 
 	if retryErr != nil {
-		glog.Errorf("error creating session %v", err)
-		util.ReturnHTTPMessage(w, r, 500, "error", "something happened")
-		return
+		return retryErr
 	}
 
-	util.ReturnHTTPMessage(w, r, 204, "updated", "updated session")
-	return
+	return nil
 }
 
 func (sss SessionServer) ResumeSessionFunc(w http.ResponseWriter, r *http.Request) {
@@ -529,23 +624,65 @@ func (sss SessionServer) ResumeSessionFunc(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	err = sss.resumeSession(ss)
+	if err != nil {
+		glog.Errorf("error resuming session %s: %s", ss.Name, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error resuming session");
+		return
+	}
+
+	util.ReturnHTTPMessage(w, r, 204, "updated", "resumed session")
+	return
+}
+
+func (sss SessionServer) AdminResumeSessionFunc(w http.ResponseWriter, r *http.Request) {
+	_, err := sss.auth.AuthNAdmin(w, r)
+	if err != nil {
+		util.ReturnHTTPMessage(w, r, 403, "forbidden", "no access to list sessions")
+		return
+	}
+
+	vars := mux.Vars(r)
+	sessionId := vars["session_id"]
+
+	if len(sessionId) == 0 {
+		util.ReturnHTTPMessage(w, r, 400, "error", "invalid session id")
+		return
+	}
+
+	ss, err := sss.GetSessionById(sessionId)
+	if err != nil {
+		glog.Errorf("error retrieving session %s: %s", sessionId, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error retrieving session")
+		return
+	}
+
+	err = sss.resumeSession(ss)
+	if err != nil {
+		glog.Errorf("error resuming session %s: %s", ss.Name, err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error resuming session");
+		return
+	}
+
+	util.ReturnHTTPMessage(w, r, 204, "updated", "resumed session")
+	return
+}
+
+func (sss SessionServer) resumeSession(s hfv1.Session) error {
 	var course hfv1.Course
 	var scenario hfv1.Scenario
+	var err error
 
-	if ss.Spec.CourseId != "" {
-		course, err = sss.courseClient.GetCourseById(ss.Spec.CourseId)
+	if s.Spec.CourseId != "" {
+		course, err = sss.courseClient.GetCourseById(s.Spec.CourseId)
 		if err != nil {
-			glog.Errorf("error retrieving course %v", err)
-			util.ReturnHTTPMessage(w, r, 500, "error", "error getting course")
-			return
+			return err
 		}
 	}
-	if ss.Spec.ScenarioId != "" {
-		scenario, err = sss.scenarioClient.GetScenarioById(ss.Spec.ScenarioId)
+	if s.Spec.ScenarioId != "" {
+		scenario, err = sss.scenarioClient.GetScenarioById(s.Spec.ScenarioId)
 		if err != nil {
-			glog.Errorf("error retrieving scenario %v", err)
-			util.ReturnHTTPMessage(w, r, 500, "error", "error getting scenario")
-			return
+			return err
 		}
 	}
 
@@ -565,9 +702,9 @@ func (sss SessionServer) ResumeSessionFunc(w http.ResponseWriter, r *http.Reques
 	newExpiration := now.Add(duration).Format(time.UnixDate)
 
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		result, getErr := sss.hfClientSet.HobbyfarmV1().Sessions().Get(sessionId, metav1.GetOptions{})
+		result, getErr := sss.hfClientSet.HobbyfarmV1().Sessions().Get(s.Name, metav1.GetOptions{})
 		if getErr != nil {
-			return fmt.Errorf("error retrieving latest version of session %s: %v", sessionId, getErr)
+			return fmt.Errorf("error retrieving latest version of session %s: %v", s.Spec.Id, getErr)
 		}
 
 		result.Status.PausedTime = ""
@@ -581,13 +718,10 @@ func (sss SessionServer) ResumeSessionFunc(w http.ResponseWriter, r *http.Reques
 	})
 
 	if retryErr != nil {
-		glog.Errorf("error creating session %v", err)
-		util.ReturnHTTPMessage(w, r, 500, "error", "something happened")
-		return
+		return retryErr
 	}
 
-	util.ReturnHTTPMessage(w, r, 204, "updated", "resumed session")
-	return
+	return nil
 }
 
 func (sss SessionServer) GetSessionFunc(w http.ResponseWriter, r *http.Request) {
@@ -620,12 +754,80 @@ func (sss SessionServer) GetSessionFunc(w http.ResponseWriter, r *http.Request) 
 	glog.V(2).Infof("retrieved session %s", ss.Spec.Id)
 }
 
+func (sss SessionServer) ActiveCount(w http.ResponseWriter, r *http.Request) {
+	_, err := sss.auth.AuthNAdmin(w, r)
+	if err != nil {
+		util.ReturnHTTPMessage(w, r, 403, "forbidden", "no access to count sessions")
+		return
+	}
+
+	sessions, err := sss.hfClientSet.HobbyfarmV1().Sessions().List(metav1.ListOptions{})
+
+	if err != nil {
+		glog.Errorf("error while listing sessions: %s", err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error listing sessions")
+		return
+	}
+
+	var activeCount = 0
+	for _, v := range sessions.Items {
+		if v.Status.Finished != true && v.Status.Active == true {
+			activeCount++
+		}
+	}
+
+	util.ReturnHTTPMessage(w, r, 200, "success", fmt.Sprintf("%d", activeCount))
+}
+
+func (sss SessionServer) ListForUser(w http.ResponseWriter, r *http.Request) {
+	_, err := sss.auth.AuthNAdmin(w, r)
+	if err != nil {
+		util.ReturnHTTPMessage(w, r, 403, "forbidden", "no access to list sessions")
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	userSessions, err := sss.hfClientSet.HobbyfarmV1().Sessions().List(metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", userLabel, vars["user_id"]),
+	})
+
+	if err != nil {
+		glog.Errorf("error while listing sessions for user %s: %s", vars["user_id"], err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error listing sessions for user")
+		return
+	}
+
+	preparedSessions := make([]PreparedSession, len(userSessions.Items))
+	for i, v := range(userSessions.Items) {
+		preparedSessions[i] = PreparedSession{v.Spec, v.Status}
+	}
+
+	marshalledSessions, err := json.Marshal(preparedSessions)
+	if err != nil {
+		glog.Errorf("error marshalling sessions for user %s: %s", vars["userid"], err)
+		util.ReturnHTTPMessage(w, r, 500, "error", "error listing sessions for user")
+		return
+	}
+
+	util.ReturnHTTPContent(w, r, 200, "success", marshalledSessions)
+}
+
 func ssIdIndexer(obj interface{}) ([]string, error) {
 	ss, ok := obj.(*hfv1.Session)
 	if !ok {
 		return []string{}, nil
 	}
 	return []string{ss.Spec.Id}, nil
+}
+
+func userIdIndexer(obj interface{}) ([]string, error) {
+	ss, ok := obj.(*hfv1.Session)
+	if !ok {
+		return []string{}, nil
+	}
+
+	return []string{ss.Spec.UserId}, nil
 }
 
 func (sss SessionServer) GetSessionById(id string) (hfv1.Session, error) {

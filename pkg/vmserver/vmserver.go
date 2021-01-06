@@ -100,7 +100,7 @@ func (vms VMServer) GetVMFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if vm.Spec.UserId != user.Spec.Id {
+	if (vm.Spec.UserId != user.Spec.Id) && !user.Spec.Admin {
 		glog.Errorf("user forbidden from accessing vm id %s", vm.Spec.Id)
 		util.ReturnHTTPMessage(w, r, 403, "forbidden", "forbidden")
 	}

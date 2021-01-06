@@ -92,7 +92,7 @@ func (sp ShellProxy) ConnectFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if vm.Spec.UserId != user.Spec.Id {
+	if (vm.Spec.UserId != user.Spec.Id) && !user.Spec.Admin {
 		util.ReturnHTTPMessage(w, r, 403, "forbidden", "you do not have access to shell")
 		return
 	}

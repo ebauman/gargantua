@@ -100,7 +100,7 @@ func (vmcs VMClaimServer) GetVMClaimFunc(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if vmc.Spec.UserId != user.Spec.Id {
+	if (vmc.Spec.UserId != user.Spec.Id) && !user.Spec.Admin {
 		glog.Errorf("user forbidden from accessing vmc id %s", vmc.Spec.Id)
 		util.ReturnHTTPMessage(w, r, 403, "forbidden", "forbidden")
 	}
