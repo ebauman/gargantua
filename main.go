@@ -2,11 +2,13 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"github.com/golang/glog"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/hobbyfarm/gargantua/pkg/accesscode"
+	adminCourseServer "github.com/hobbyfarm/gargantua/pkg/admin/courseserver"
 	adminEnvironmentServer "github.com/hobbyfarm/gargantua/pkg/admin/environmentserver"
 	adminScenarioServer "github.com/hobbyfarm/gargantua/pkg/admin/scenarioserver"
 	adminScheduledEventServer "github.com/hobbyfarm/gargantua/pkg/admin/scheduledeventserver"
@@ -48,6 +50,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	ClientGoQPS = 100
+	ClientGoBurst = 100
+)
+
 var (
 	localMasterUrl     string
 	localKubeconfig    string
@@ -80,6 +87,9 @@ func main() {
 			glog.Fatalf("Error building kubeconfig: %s", err.Error())
 		}
 	}
+
+	cfg.QPS = ClientGoQPS
+	cfg.Burst = ClientGoBurst
 
 	hfClient, err := hfClientset.NewForConfig(cfg)
 	if err != nil {
@@ -178,6 +188,11 @@ func main() {
 		glog.Fatal(err)
 	}
 
+	adminCServer, err := adminCourseServer.NewAdminCourseServer(authClient, hfClient)
+	if err != nil {
+		glog.Fatal(err)
+	}
+
 	if shellServer {
 		glog.V(2).Infof("Starting as a shell server")
 		shellProxy.SetupRoutes(r)
@@ -194,6 +209,7 @@ func main() {
 		adminSEServer.SetupRoutes(r)
 		adminUServer.SetupRoutes(r)
 		adminVMTServer.SetupRoutes(r)
+		adminCServer.SetupRoutes(r)
 	}
 
 	corsHeaders := handlers.AllowedHeaders([]string{"Authorization", "Content-Type"})
@@ -293,13 +309,18 @@ func main() {
 	}
 
 	hfInformerFactory.Start(stopCh)
-	glog.Info("listening on 80")
 
 	wg.Add(1)
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "80"
+	}
+	glog.Info("listening on " + port)
+
 	go func() {
 		defer wg.Done()
-		glog.Fatal(http.ListenAndServe(":80", handlers.CORS(corsHeaders, corsOrigins, corsMethods)(r)))
+		glog.Fatal(http.ListenAndServe(":"+port, handlers.CORS(corsHeaders, corsOrigins, corsMethods)(r)))
 	}()
 
 	wg.Wait()
