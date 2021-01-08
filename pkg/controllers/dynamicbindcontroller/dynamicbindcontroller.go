@@ -134,8 +134,6 @@ func (d *DynamicBindController) processNextDynamicBindRequest() bool {
 
 func (d *DynamicBindController) reconcileDynamicBindRequest(dynamicBindRequest *hfv1.DynamicBindRequest) error {
 
-	d.updateDynamicBindRequestStatus(dynamicBindRequest.Status.CurrentAttempts+1, false, false, "", make(map[string]string), dynamicBindRequest.Spec.Id)
-
 	vmClaim, err := d.hfClientSet.HobbyfarmV1().VirtualMachineClaims().Get(dynamicBindRequest.Spec.VirtualMachineClaim, metav1.GetOptions{})
 
 	if err != nil {
@@ -157,6 +155,7 @@ func (d *DynamicBindController) reconcileDynamicBindRequest(dynamicBindRequest *
 
 	if err != nil {
 		glog.Errorf("Error while retrieving dynamic bind configurations, %v", err)
+		return err
 	}
 
 	var chosenDynamicBindConfiguration *hfv1.DynamicBindConfiguration
@@ -330,7 +329,7 @@ func (d *DynamicBindController) reconcileDynamicBindRequest(dynamicBindRequest *
 		}
 	}
 
-	return nil
+	return d.updateDynamicBindRequestStatus(dynamicBindRequest.Status.CurrentAttempts+1, false, false, "", make(map[string]string), dynamicBindRequest.Spec.Id)
 }
 
 func (d *DynamicBindController) updateDynamicBindRequestStatus(dynamicBindAttempts int, expired bool, fulfilled bool, dynamicBindConfigurationId string, virtualMachineIds map[string]string, dynamicBindRequestId string) error {
