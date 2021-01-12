@@ -135,24 +135,17 @@ func (d *DynamicBindController) processNextDynamicBindRequest() bool {
 func (d *DynamicBindController) reconcileDynamicBindRequest(dynamicBindRequest *hfv1.DynamicBindRequest) error {
 
 	vmClaim, err := d.hfClientSet.HobbyfarmV1().VirtualMachineClaims().Get(dynamicBindRequest.Spec.VirtualMachineClaim, metav1.GetOptions{})
-
 	if err != nil {
-		glog.Errorf("error retrieving corresponding virtual machine claim %s for dynamic bind request %s", dynamicBindRequest.Spec.VirtualMachineClaim, dynamicBindRequest.Spec.Id)
+		glog.Errorf("error retrieving corresponding virtual machine claim %s for dynamic bind request %s: %s", dynamicBindRequest.Spec.VirtualMachineClaim, dynamicBindRequest.Spec.Id, err)
+		return nil
 	}
 
-	var dbcSelector metav1.ListOptions
-	if vmClaim.Spec.RestrictedBind {
-		dbcSelector = metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("restrictedbind=true,restrictedbindvalue=%s", vmClaim.Spec.RestrictedBindValue),
-		}
-	} else {
-		dbcSelector = metav1.ListOptions{
-			LabelSelector: "restrictedbind=false",
-		}
-	}
+	// Setup the selector to list dynamic bind configurations
+	// This differs based on whether or not restricted bind has been set for the vmclaim
+	dbcSelector := d.determineDbcSelector(*vmClaim)
+
 
 	dynamicBindConfigurations, err := d.hfClientSet.HobbyfarmV1().DynamicBindConfigurations().List(dbcSelector)
-
 	if err != nil {
 		glog.Errorf("Error while retrieving dynamic bind configurations, %v", err)
 		return err
@@ -318,7 +311,7 @@ func (d *DynamicBindController) reconcileDynamicBindRequest(dynamicBindRequest *
 			virtualMachines[vmClaimVMName] = vm.Name
 		}
 
-		d.updateDynamicBindRequestStatus(dynamicBindRequest.Spec.Attempts, false, true, chosenDynamicBindConfiguration.Spec.Id, virtualMachines, dynamicBindRequest.Spec.Id)
+		return d.updateDynamicBindRequestStatus(dynamicBindRequest.Spec.Attempts, false, true, chosenDynamicBindConfiguration.Spec.Id, virtualMachines, dynamicBindRequest.Spec.Id)
 
 	} else {
 		// check to see if we're above our attempt threshold
@@ -329,7 +322,8 @@ func (d *DynamicBindController) reconcileDynamicBindRequest(dynamicBindRequest *
 		}
 	}
 
-	return d.updateDynamicBindRequestStatus(dynamicBindRequest.Status.CurrentAttempts+1, false, false, "", make(map[string]string), dynamicBindRequest.Spec.Id)
+	// return d.updateDynamicBindRequestStatus(dynamicBindRequest.Status.CurrentAttempts+1, false, false, "", make(map[string]string), dynamicBindRequest.Spec.Id)
+	return nil
 }
 
 func (d *DynamicBindController) updateDynamicBindRequestStatus(dynamicBindAttempts int, expired bool, fulfilled bool, dynamicBindConfigurationId string, virtualMachineIds map[string]string, dynamicBindRequestId string) error {
@@ -357,4 +351,19 @@ func (d *DynamicBindController) updateDynamicBindRequestStatus(dynamicBindAttemp
 		return fmt.Errorf("error updating DynamicBindRequest: %s, %v", dynamicBindRequestId, retryErr)
 	}
 	return nil
+}
+
+func (d *DynamicBindController) determineDbcSelector(vmclaim hfv1.VirtualMachineClaim) metav1.ListOptions {
+	var dbcSelector metav1.ListOptions
+	if vmclaim.Spec.RestrictedBind {
+		dbcSelector = metav1.ListOptions{
+			LabelSelector: fmt.Sprintf("restrictedbind=true,restrictedbindvalue=%s", vmclaim.Spec.RestrictedBindValue),
+		}
+	} else {
+		dbcSelector = metav1.ListOptions{
+			LabelSelector: "restrictedbind=false",
+		}
+	}
+
+	return dbcSelector
 }
