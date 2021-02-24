@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base32"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/glog"
@@ -11,7 +12,7 @@ import (
 	hfv1 "github.com/hobbyfarm/gargantua/pkg/apis/hobbyfarm.io/v1"
 	"github.com/hobbyfarm/gargantua/pkg/authclient"
 	hfClientset "github.com/hobbyfarm/gargantua/pkg/client/clientset/versioned"
-	"github.com/hobbyfarm/gargantua/pkg/errors"
+	gargErrors "github.com/hobbyfarm/gargantua/pkg/errors"
 	"github.com/hobbyfarm/gargantua/pkg/util"
 	"golang.org/x/crypto/bcrypt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,6 +25,8 @@ import (
 const (
 	emailIndex = "authn.hobbyfarm.io/user-email-index"
 )
+
+type RegistrationParser func(w http.ResponseWriter, r *http.Request) (Registration, error)
 
 type AuthServer struct {
 	auth        *authclient.AuthClient
@@ -114,7 +117,7 @@ func (a AuthServer) NewUser(email string, password string) (string, error) {
 
 	if err == nil {
 		// the user was found, we should return info
-		return "", errors.NewAlreadyExists("user already exists")
+		return "", gargErrors.NewAlreadyExists("user already exists")
 	}
 
 	newUser := hfv1.User{}
@@ -367,29 +370,76 @@ func (a AuthServer) ChangePassword(userId string, oldPassword string, newPasswor
 	return nil
 }
 
+type Registration struct {
+	Email      string
+	AccessCode string
+	Password   string
+}
+
+func (a AuthServer) ParseRegistrationJSON(_ http.ResponseWriter, r *http.Request) (*Registration, error) {
+	reg := Registration{}
+
+	// parse json into registration obj
+	data := []byte{}
+	_, err := r.Body.Read(data)
+	if err != nil {
+		return nil, err
+	}
+
+	// apply validation
+	if len(reg.Email) == 0 || len(reg.AccessCode) == 0 || len(reg.Password) == 0 {
+		return nil, errors.New("invalid input. required fields: email, access_code, password")
+	}
+
+	// sanitize access code
+	reg.AccessCode = strings.ToLower(reg.AccessCode)
+
+	return &reg, nil
+}
+
+func (a AuthServer) ParseRegistrationForm(_ http.ResponseWriter, r *http.Request) (*Registration, error) {
+	err := r.ParseForm()
+	if err != nil {
+		return nil, err
+	}
+
+	reg := Registration{}
+
+	reg.Email = r.PostFormValue("email")
+	reg.AccessCode = strings.ToLower(r.PostFormValue("access_code"))
+	reg.Password = r.PostFormValue("password")
+
+	if len(reg.Email) == 0 || len(reg.AccessCode) == 0 || len(reg.Password) == 0 {
+		return nil, errors.New("invalid input. required fields: email, access_code, password")
+	}
+
+	return &reg, nil
+}
+
 func (a AuthServer) RegisterWithAccessCodeFunc(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	var reg *Registration
+	var err error
+	if (r.Header.Get("content-type")) == "application/json" {
+		reg, err = a.ParseRegistrationJSON(w, r)
+	} else {
+		reg, err = a.ParseRegistrationForm(w, r)
+	}
 
-	email := r.PostFormValue("email")
-	accessCode := strings.ToLower(r.PostFormValue("access_code"))
-	password := r.PostFormValue("password")
-	// should we reconcile based on the access code posted in? nah
-
-	if len(email) == 0 || len(accessCode) == 0 || len(password) == 0 {
-		util.ReturnHTTPMessage(w, r, 400, "error", "invalid input. required fields: email, access_code, password")
+	if err != nil {
+		util.ReturnHTTPMessage(w, r, 400, "error", err.Error())
 		return
 	}
 
-	userId, err := a.NewUser(email, password)
+	userId, err := a.NewUser(reg.Email, reg.Password)
 
 	if err != nil {
 		var msg string
 		var code = 400
-		if errors.IsAlreadyExists(err) {
+		if gargErrors.IsAlreadyExists(err) {
 			code = 409
 			msg = err.Error()
 		} else {
-			glog.Errorf("error creating user %s %v", email, err)
+			glog.Errorf("error creating user %s %v", reg.Email, err)
 			msg = "error creating user"
 		}
 
@@ -397,15 +447,15 @@ func (a AuthServer) RegisterWithAccessCodeFunc(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = a.AddAccessCode(userId, accessCode)
+	err = a.AddAccessCode(userId, reg.AccessCode)
 
 	if err != nil {
-		glog.Errorf("error creating user %s %v", email, err)
+		glog.Errorf("error creating user %s %v", reg.Email, err)
 		util.ReturnHTTPMessage(w, r, 400, "error", "error creating user")
 		return
 	}
 
-	glog.V(2).Infof("created user %s", email)
+	glog.V(2).Infof("created user %s", reg.Email)
 	util.ReturnHTTPMessage(w, r, 201, "info", "created user")
 }
 
