@@ -26,8 +26,6 @@ const (
 	emailIndex = "authn.hobbyfarm.io/user-email-index"
 )
 
-type RegistrationParser func(w http.ResponseWriter, r *http.Request) (Registration, error)
-
 type AuthServer struct {
 	auth        *authclient.AuthClient
 	hfClientSet hfClientset.Interface
