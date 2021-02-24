@@ -420,6 +420,11 @@ func (a AuthServer) ParseRegistrationJSON(_ http.ResponseWriter, r *http.Request
 		return nil, err
 	}
 
+	err = json.Unmarshal(data, &reg)
+	if err != nil {
+		return nil, err
+	}
+
 	// apply validation
 	if len(reg.Email) == 0 || len(reg.AccessCode) == 0 || len(reg.Password) == 0 {
 		return nil, errors.New("invalid input. required fields: email, access_code, password")
