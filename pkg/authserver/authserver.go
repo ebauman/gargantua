@@ -191,6 +191,34 @@ func (a AuthServer) ListAccessCodeFunc(w http.ResponseWriter, r *http.Request) {
 	glog.V(2).Infof("retrieved accesscode list for user %s", user.Spec.Email)
 }
 
+func (a AuthServer) ParseAccessCodeForm(w http.ResponseWriter, r *http.Request) (string, error) {
+	err := r.ParseForm()
+	if err != nil {
+		return "", err
+	}
+
+	accessCode := strings.ToLower(r.PostFormValue("access_code"))
+
+	return accessCode, nil
+}
+
+func (a AuthServer) ParseAccessCodeJSON(w http.ResponseWriter, r *http.Request) (string, error) {
+	data := []byte{}
+
+	_, err := r.Body.Read(data)
+	if err != nil {
+		return "", err
+	}
+
+	var accessCode string
+	err = json.Unmarshal(data, &accessCode)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ToLower(accessCode), nil
+}
+
 func (a AuthServer) AddAccessCodeFunc(w http.ResponseWriter, r *http.Request) {
 	user, err := a.auth.AuthN(w, r)
 	if err != nil {
@@ -198,9 +226,17 @@ func (a AuthServer) AddAccessCodeFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
+	var accessCode string
+	if r.Header.Get("content-type") == "application/json" {
+		accessCode, err = a.ParseAccessCodeJSON(w, r)
+	} else {
+		accessCode, err = a.ParseAccessCodeForm(w, r)
+	}
 
-	accessCode := strings.ToLower(r.PostFormValue("access_code"))
+	if err != nil {
+		util.ReturnHTTPMessage(w, r, 400, "bad input", err.Error())
+		return
+	}
 
 	err = a.AddAccessCode(user.Spec.Id, accessCode)
 
