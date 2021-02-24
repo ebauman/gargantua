@@ -20,10 +20,6 @@ func NewAccessCodeClient(hfClientset hfClientset.Interface) (*AccessCodeClient, 
 	return &acc, nil
 }
 
-func (acc AccessCodeClient) GetSomething(code string) error {
-	return nil
-}
-
 func (acc AccessCodeClient) GetAccessCodes(codes []string, expiredOk bool) ([]hfv1.AccessCode, error) {
 	if len(codes) == 0 {
 		return nil, fmt.Errorf("code list passed in was less than 0")
