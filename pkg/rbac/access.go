@@ -59,6 +59,9 @@ func (i *Index) GetAccessSet(subj string) (*AccessSet, error) {
 }
 
 func (i *Index) addToAccessSet(accessSet *AccessSet, namespace string, rules []rbacv1.PolicyRule) {
+	if namespace == "" {
+		namespace = All
+	}
 	for _, rule := range rules {
 		// for each rule
 		for _, apiGroup := range rule.APIGroups {
@@ -66,9 +69,12 @@ func (i *Index) addToAccessSet(accessSet *AccessSet, namespace string, rules []r
 			for _, resource := range rule.Resources {
 				// for each resource in the rule
 				for _, verb := range rule.Verbs {
-					if namespace == "" {
-						namespace = All
-					}
+					// we only care about rules that apply to hobbyfarm
+					// that is, rules that are either in our install namespace or are part of a global role,
+					// rules that are for all apigroups, or hobbyfarm.io,
+					// and rules that are for all resources, or a resource inside of i.resources
+
+
 					key := fmt.Sprintf("/%s/%s/%s/%s", namespace, apiGroup, resource, verb)
 					accessSet.Access[key] = true
 				}

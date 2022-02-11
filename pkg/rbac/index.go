@@ -3,36 +3,51 @@ package rbac
 import (
 	"fmt"
 	v1 "k8s.io/api/rbac/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 )
 
 const (
-	rbIndex = "rbac.hobbyfarm.io/rb-index"
-	RbacGroup = "rbac.authorization.k8s.io"
-	All = "*"
+	rbIndex    = "rbac.hobbyfarm.io/rb-index"
+	RbacGroup  = "rbac.authorization.k8s.io"
+	All        = "*"
+	hfApiGroup = "hobbyfarm.io"
 )
 
 var (
-	KindUser = "User"
-	KindGroup = "Group"
+	KindUser           = "User"
+	KindGroup          = "Group"
 	KindServiceAccount = "ServiceAccount"
 )
 
 type Index struct {
 	kind string
 
-	roleBindingIndexer cache.Indexer
+	namespace string
+
+	resources map[string]bool
+
+	roleBindingIndexer        cache.Indexer
 	clusterRoleBindingIndexer cache.Indexer
 
-	roleIndexer cache.Indexer
+	roleIndexer        cache.Indexer
 	clusterRoleIndexer cache.Indexer
 }
 
-func NewIndex(kind string, informerFactory informers.SharedInformerFactory) (*Index, error) {
+func NewIndex(kind string, namespace string, resources *metav1.APIResourceList, informerFactory informers.SharedInformerFactory) (*Index, error) {
 	i := &Index{
 		kind: kind,
+		namespace: namespace,
 	}
+
+	// build a list of resources that accesssets should care about
+	var resourceMap = map[string]bool{}
+	for _, apiRes := range resources.APIResources {
+		resourceMap[apiRes.Name] = true
+	}
+
+	i.resources = resourceMap
 
 	// build an informer for each of rolebinding and clusterrolebinding
 	rbInformer := informerFactory.Rbac().V1().RoleBindings().Informer()
@@ -68,7 +83,7 @@ if the index type (i.kind) is user, we index user subjects of rolebindings. if g
 for both types, we index serviceaccounts as well as they are special
 
 this lets us perform quick lookups of the rolebindings for a subject
- */
+*/
 func (i *Index) roleBindingSubjectIndexer(obj interface{}) (result []string, err error) {
 	rb, ok := obj.(*v1.RoleBinding)
 	if !ok {
@@ -93,7 +108,7 @@ if the index type (i.kind) is user, we index user subjects of clusterrolebinding
 for both types, we index serviceaccounts as well as they are special
 
 this lets us perform quick lookups of the clusterrolebindings for a subject
- */
+*/
 func (i *Index) clusterRoleBindingSubjectIndexer(obj interface{}) (result []string, err error) {
 	crb, ok := obj.(*v1.ClusterRoleBinding)
 	if !ok {

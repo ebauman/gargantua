@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/hobbyfarm/gargantua/pkg/authclient"
+	hfClientset "github.com/hobbyfarm/gargantua/pkg/client/clientset/versioned"
 	"github.com/hobbyfarm/gargantua/pkg/util"
 	"k8s.io/client-go/informers"
 	"net/http"
@@ -22,13 +23,15 @@ type RbacServer struct {
 	groupIndex *Index
 }
 
-func NewRbacServer(auth *authclient.AuthClient, kubeInformerFactory informers.SharedInformerFactory) (*RbacServer, error) {
-	userIndex, err := NewIndex("User", kubeInformerFactory)
+func NewRbacServer(namespace string, hfClient *hfClientset.Clientset, auth *authclient.AuthClient, kubeInformerFactory informers.SharedInformerFactory) (*RbacServer, error) {
+	resources, err := hfClient.ServerResourcesForGroupVersion("hobbyfarm.io/v1")
+
+	userIndex, err := NewIndex("User", resources, kubeInformerFactory)
 	if err != nil {
 		return nil, err
 	}
 
-	groupIndex, err := NewIndex("Group", kubeInformerFactory)
+	groupIndex, err := NewIndex("Group", resources, kubeInformerFactory)
 	if err != nil {
 		return nil, err
 	}
