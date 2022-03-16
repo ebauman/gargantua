@@ -212,6 +212,7 @@ func (v *VMClaimController) processNextVMClaim() bool {
 	}()
 
 	if err != nil {
+		glog.Error(err)
 		// requeue object
 		//v.vmClaimWorkqueue.Add(obj)
 		return true
