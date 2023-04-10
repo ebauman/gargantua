@@ -26,3 +26,46 @@ type UserSpec struct {
 	AccessCodes []string          `json:"access_codes"`
 	Settings    map[string]string `json:"settings"`
 }
+
+type Provider struct {
+	Spec ProviderSpec
+}
+
+type ProviderSpec struct {
+	Configuration map[string]any
+}
+
+type ScalarType string
+
+const (
+	ScalarTypeString  ScalarType = "string"
+	ScalarTypeInteger ScalarType = "integer"
+	ScalarTypeBoolean ScalarType = "boolean"
+	ScalarTypeFloat   ScalarType = "float"
+)
+
+type ScalarConfigurationItem struct {
+	Key   string
+	Type  ScalarType
+	Value any
+}
+
+type MapConfigurationItem struct {
+	Key    string
+	Values map[string]ScalarConfigurationItem
+}
+
+type ArrayConfigurationItem struct {
+	Key    string
+	Values []ScalarConfigurationItem
+}
+
+/*
+configuration:
+	itemOne: string
+	itemTwo:
+		itemTwoSub: string
+	itemThree:
+	- string
+	itemFour: boolean
+*/
