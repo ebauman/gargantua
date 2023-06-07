@@ -2,11 +2,11 @@ package rbacclient
 
 const (
 	OperatorAnd = "AND"
-	OperatorOr = "OR"
+	OperatorOr  = "OR"
 )
 
 type Request struct {
-	operator string
+	operator    string
 	permissions []Permission
 }
 
@@ -52,17 +52,28 @@ type Permission interface {
 	GetAPIGroup() string
 	GetResource() string
 	GetVerb() string
+	GetResourceName() string
 }
 
 type GenericPermission struct {
-	APIGroup string
-	Resource string
-	Verb string
+	APIGroup     string
+	Resource     string
+	Verb         string
+	ResourceName string
 }
 
 type HobbyfarmPermission struct {
-	Resource string
-	Verb string
+	Resource     string
+	Verb         string
+	ResourceName string
+}
+
+func (hf HobbyfarmPermission) WithResourceName(resourceName string) {
+	hf.ResourceName = resourceName
+}
+
+func (gp GenericPermission) WithResourceName(resourceName string) {
+	gp.ResourceName = resourceName
 }
 
 func (g GenericPermission) GetAPIGroup() string {
@@ -77,6 +88,10 @@ func (g GenericPermission) GetVerb() string {
 	return g.Verb
 }
 
+func (g GenericPermission) GetResourceName() string {
+	return g.ResourceName
+}
+
 func (h HobbyfarmPermission) GetAPIGroup() string {
 	return APIGroup
 }
@@ -87,4 +102,8 @@ func (h HobbyfarmPermission) GetResource() string {
 
 func (h HobbyfarmPermission) GetVerb() string {
 	return h.Verb
+}
+
+func (h HobbyfarmPermission) GetResourceName() string {
+	return h.ResourceName
 }

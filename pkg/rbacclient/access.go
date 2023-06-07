@@ -12,11 +12,10 @@ import (
 // so what would be basically O(n^3) is really just 2 lookups per level.
 // two verbs, two groups, two resources. (e.g. * & get, * & hobbyfarm.io, * & ScheduledEvent)
 
-
 type AccessSet struct {
 	Subject string `json:"subject"`
 
-	// key is /apigroup/resource/verb
+	// key is /apigroup/resource/verb/resourceName
 	Access map[string]bool `json:"access"`
 }
 
@@ -25,7 +24,13 @@ func (as *AccessSet) Grants(perm Permission) bool {
 	for _, a := range []string{perm.GetAPIGroup(), All} {
 		for _, r := range []string{perm.GetResource(), All} {
 			for _, v := range []string{perm.GetVerb(), All} {
-				if as.Access[fmt.Sprintf("/%s/%s/%s", a, r, v)] {
+				var key string
+				if rn := perm.GetResourceName(); rn != "" {
+					key = fmt.Sprintf("/%s/%s/%s/%s", a, r, v, rn)
+				} else {
+					key = fmt.Sprintf("%s/%s/%s", a, r, v)
+				}
+				if as.Access[key] {
 					return true
 				}
 			}
@@ -89,7 +94,15 @@ func (i *Index) addToAccessSet(accessSet *AccessSet, namespace string, rules []r
 			for _, resource := range rule.Resources {
 				// for each resource in the rule
 				for _, verb := range rule.Verbs {
-					key := fmt.Sprintf("/%s/%s/%s", apiGroup, resource, verb)
+					// for each verb in the rule
+					var key string
+					if len(rule.ResourceNames) > 0 {
+						for _, resourceName := range rule.ResourceNames {
+							key = fmt.Sprintf("/%s/%s/%s/%s", apiGroup, resource, verb, resourceName)
+						}
+					} else {
+						key = fmt.Sprintf("/%s/%s/%s", apiGroup, resource, verb)
+					}
 					accessSet.Access[key] = true
 				}
 			}
