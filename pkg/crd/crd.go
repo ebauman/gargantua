@@ -18,8 +18,7 @@ func GenerateCRDs(caBundle string, reference apiextv1.ServiceReference) []crder.
 						WithColumn("Status", ".status.status").
 						WithColumn("Allocated", ".status.allocated").
 						WithColumn("PublicIP", ".status.public_ip").
-						WithColumn("PrivateIP", ".status.private_ip").
-						WithStatus()
+						WithColumn("PrivateIP", ".status.private_ip")
 				})
 		}),
 		hobbyfarmCRD(&v1.VirtualMachineClaim{}, func(c *crder.CRD) {
@@ -29,8 +28,7 @@ func GenerateCRDs(caBundle string, reference apiextv1.ServiceReference) []crder.
 					cv.
 						WithColumn("BindMode", ".status.bind_mode").
 						WithColumn("Bound", ".status.bound").
-						WithColumn("Ready", ".status.ready").
-						WithStatus()
+						WithColumn("Ready", ".status.ready")
 				})
 		}),
 		hobbyfarmCRD(&v1.VirtualMachineTemplate{}, func(c *crder.CRD) {
@@ -49,8 +47,7 @@ func GenerateCRDs(caBundle string, reference apiextv1.ServiceReference) []crder.
 				AddVersion("v1", &v1.VirtualMachineSet{}, func(cv *crder.Version) {
 					cv.
 						WithColumn("Available", ".status.available").
-						WithColumn("Provisioned", ".status.provisioned").
-						WithStatus()
+						WithColumn("Provisioned", ".status.provisioned")
 				})
 		}),
 		hobbyfarmCRD(&v1.Course{}, func(c *crder.CRD) {
@@ -72,8 +69,7 @@ func GenerateCRDs(caBundle string, reference apiextv1.ServiceReference) []crder.
 						WithColumn("Active", ".status.active").
 						WithColumn("Finished", ".status.finished").
 						WithColumn("StartTime", ".status.start_time").
-						WithColumn("ExpirationTime", ".status.end_time").
-						WithStatus()
+						WithColumn("ExpirationTime", ".status.end_time")
 				})
 		}),
 		hobbyfarmCRD(&v1.Progress{}, func(c *crder.CRD) {
@@ -130,8 +126,7 @@ func GenerateCRDs(caBundle string, reference apiextv1.ServiceReference) []crder.
 					cv.
 						WithColumn("AccessCode", ".spec.access_code").
 						WithColumn("Active", ".status.active").
-						WithColumn("Finished", ".status.finished").
-						WithStatus()
+						WithColumn("Finished", ".status.finished")
 				})
 		}),
 		hobbyfarmCRD(&v1.PredefinedService{}, func(c *crder.CRD) {
