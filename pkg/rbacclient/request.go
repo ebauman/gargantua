@@ -39,12 +39,22 @@ func (r *Request) Or() *Request {
 }
 
 func (r *Request) HobbyfarmPermission(resource string, verb string) *Request {
-	r.permissions = append(r.permissions, HobbyfarmPermission{Resource: resource, Verb: verb})
-	return r
+	return r.HobbyfarmPermissionWithName(resource, verb, "")
 }
 
 func (r *Request) Permission(apigroup string, resource string, verb string) *Request {
-	r.permissions = append(r.permissions, GenericPermission{APIGroup: apigroup, Resource: resource, Verb: verb})
+	return r.PermissionWithName(apigroup, resource, verb, "")
+}
+
+func (r *Request) HobbyfarmPermissionWithName(resource string, verb string, name string) *Request {
+	r.permissions = append(r.permissions, HobbyfarmPermission{Resource: resource, Verb: verb, ResourceName: name})
+
+	return r
+}
+
+func (r *Request) PermissionWithName(apigroup string, resource string, verb string, name string) *Request {
+	r.permissions = append(r.permissions, GenericPermission{APIGroup: apigroup, Resource: resource, Verb: verb, ResourceName: name})
+
 	return r
 }
 
