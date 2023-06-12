@@ -24,14 +24,14 @@ func (as *AccessSet) Grants(perm Permission) bool {
 	for _, a := range []string{perm.GetAPIGroup(), All} {
 		for _, r := range []string{perm.GetResource(), All} {
 			for _, v := range []string{perm.GetVerb(), All} {
-				var key string
-				if rn := perm.GetResourceName(); rn != "" {
-					key = fmt.Sprintf("/%s/%s/%s/%s", a, r, v, rn)
-				} else {
-					key = fmt.Sprintf("%s/%s/%s", a, r, v)
-				}
-				if as.Access[key] {
-					return true
+				// we want to check both even if there is a resource name
+				// as some roles may allow all resources, some may be resource specific
+				var resourceKey = fmt.Sprintf("/%s/%s/%s/%s", a, r, v, perm.GetResourceName())
+				var verbKey = fmt.Sprintf("/%s/%s/%s", a, r, v)
+				for _, k := range []string{resourceKey, verbKey} {
+					if as.Access[k] {
+						return true
+					}
 				}
 			}
 		}
