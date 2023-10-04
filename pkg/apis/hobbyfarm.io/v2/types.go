@@ -285,17 +285,50 @@ type MachineSpec struct {
 	ConnectEndpoints map[ConnectProtocol]string `json:"connectEndpoints"`
 }
 
+type MachineLifecycle string
+
+const (
+	LifecycleUnknown  MachineLifecycle = "unknown"
+	LifecycleReady    MachineLifecycle = "ready"
+	LifecycleNotReady MachineLifecycle = "notready"
+)
+
 type MachineStatus struct {
 	Conditions []genericcondition.GenericCondition `json:"conditions"`
 	Lifecycle  MachineLifecycle                    `json:"lifecycle"`
 	Properties map[string]string                   `json:"properties"`
 }
 
-type MachineLifecycle string
+type MachineClaim struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MachineClaimSpec   `json:"spec"`
+	Status MachineClaimStatus `json:"status,omitempty"`
+}
+
+type ClaimStrategy string
 
 const (
-	LifecycleCreated      MachineLifecycle = "created"
-	LifecycleProvisioning MachineLifecycle = "provisioning"
-	LifecycleRunning      MachineLifecycle = "running"
-	LifecycleTerminated   MachineLifecycle = "terminated"
+	ClaimStrategyAnyAvailable ClaimStrategy = "anyavailable"
+	ClaimStrategyAccessCode   ClaimStrategy = "accesscode"
 )
+
+type MachineClaimSpec struct {
+	MachineTemplate string        `json:"machineTemplate"`
+	User            string        `json:"user"`
+	ClaimStrategy   ClaimStrategy `json:"claimStrategy"`
+	AccessCode      string        `json:"accessCode"`
+}
+
+type MachineClaimLifecycle string
+
+const (
+	MachineClaimLifecycleAvailable MachineClaimLifecycle = "available"
+	MachineClaimLifecycleBound     MachineClaimLifecycle = "bound"
+	MachineClaimLifecycleFailed    MachineClaimLifecycle = "failed"
+)
+
+type MachineClaimStatus struct {
+	MachineClaimLifecycle MachineClaimLifecycle `json:"machineClaimLifecycle"`
+}
