@@ -122,7 +122,7 @@ func main() {
 			glog.Fatalf("error reading ca certificate: %s", err.Error())
 		}
 
-		crds := crd.GenerateCRDs(string(ca), crd.ServiceReference{
+		crds := crd.GenerateCRDsWithCABundleAndServiceReference(string(ca), crd.ServiceReference{
 			Namespace: namespace,
 			Name:      "hobbyfarm-webhook",
 		})

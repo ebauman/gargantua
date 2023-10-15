@@ -16,7 +16,11 @@ const (
 	namespaceNameLabel = "kubernetes.io/metadata.name"
 )
 
-func GenerateCRDs(caBundle string, reference ServiceReference) []crder.CRD {
+func GenerateCRDs() {
+
+}
+
+func GenerateCRDsWithCABundleAndServiceReference(caBundle string, reference ServiceReference) []crder.CRD {
 	return []crder.CRD{
 		hobbyfarmCRD(&v1.VirtualMachine{}, func(c *crder.CRD) {
 			c.

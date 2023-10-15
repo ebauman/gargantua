@@ -73,6 +73,19 @@ func (sss SessionServer) SetupRoutes(r *mux.Router) {
 	glog.V(2).Infof("set up routes for session server")
 }
 
+//func GetSessionValuesFromRequest(r *http.Request) (courseId string, scenarioId string, accessCode string, err error) {
+//	courseId = r.PostFormValue("course")
+//	scenarioId = r.PostFormValue("scenario")
+//	accessCode = r.PostFormValue("access_code")
+//
+//	if courseId == "" && scenarioId == "" {
+//		err = fmt.Errorf("no course or scenario id passed in")
+//		return
+//	}
+//
+//	return courseId, scenarioId, accessCode, nil
+//}
+
 func (sss SessionServer) NewSessionFunc(w http.ResponseWriter, r *http.Request) {
 	user, err := sss.auth.AuthN(w, r)
 	if err != nil {
