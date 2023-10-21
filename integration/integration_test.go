@@ -44,7 +44,7 @@ func CreateTestCluster(t *testing.T) (kubeconfig string) {
 	var err error
 	kubeconfig, err = CreateCluster()
 
-	if strings.Contains(err.Error(), "a cluster with that name already exists") {
+	if err != nil && strings.Contains(err.Error(), "a cluster with that name already exists") {
 		DestroyTestCluster(t)
 		kubeconfig, err = CreateCluster()
 	}
