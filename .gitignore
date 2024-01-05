@@ -20,3 +20,8 @@ artifacts/testing
 
 kubeconfig
 ko
+/apiserver
+/apiserver.local.config/certificates/apiserver.crt
+/apiserver.local.config/certificates/apiserver.key
+/apiserver.local.config/certificates/minkconfig
+/result/
