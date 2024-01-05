@@ -8,8 +8,8 @@ import (
 	"github.com/hobbyfarm/gargantua/v3/pkg/microservices"
 
 	"github.com/golang/glog"
-	accesscodeservice "github.com/hobbyfarm/gargantua/services/accesscodesvc/v3/internal"
 	accessCodeProto "github.com/hobbyfarm/gargantua/v3/protos/accesscode"
+	accesscodeservice "github.com/hobbyfarm/gargantua/v3/services/accesscodesvc/internal"
 )
 
 var (

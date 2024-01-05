@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	rbacservice "github.com/hobbyfarm/gargantua/services/rbacsvc/v3/internal"
-	rbacinstaller "github.com/hobbyfarm/gargantua/services/rbacsvc/v3/internal/rbac"
 	"github.com/hobbyfarm/gargantua/v3/pkg/microservices"
 	"github.com/hobbyfarm/gargantua/v3/pkg/signals"
 	"github.com/hobbyfarm/gargantua/v3/pkg/util"
 	"github.com/hobbyfarm/gargantua/v3/protos/authn"
 	"github.com/hobbyfarm/gargantua/v3/protos/authr"
 	rbacProto "github.com/hobbyfarm/gargantua/v3/protos/rbac"
+	rbacservice "github.com/hobbyfarm/gargantua/v3/services/rbacsvc/internal"
+	rbacinstaller "github.com/hobbyfarm/gargantua/v3/services/rbacsvc/internal/rbac"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 )

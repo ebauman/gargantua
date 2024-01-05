@@ -5,7 +5,7 @@ import (
 
 	"github.com/hobbyfarm/gargantua/v3/pkg/microservices"
 
-	authrservice "github.com/hobbyfarm/gargantua/services/authrsvc/v3/internal"
+	authrservice "github.com/hobbyfarm/gargantua/v3/services/authrsvc/internal"
 
 	"github.com/hobbyfarm/gargantua/v3/protos/authr"
 	"github.com/hobbyfarm/gargantua/v3/protos/rbac"

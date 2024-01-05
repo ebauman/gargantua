@@ -8,11 +8,11 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/hobbyfarm/gargantua/services/conversionsvc/v3/internal/conversion"
-	"github.com/hobbyfarm/gargantua/services/conversionsvc/v3/internal/conversion/user"
-	"github.com/hobbyfarm/gargantua/services/conversionsvc/v3/internal/validation"
 	"github.com/hobbyfarm/gargantua/v3/pkg/microservices"
 	tls2 "github.com/hobbyfarm/gargantua/v3/pkg/tls"
+	"github.com/hobbyfarm/gargantua/v3/services/conversionsvc/internal/conversion"
+	"github.com/hobbyfarm/gargantua/v3/services/conversionsvc/internal/conversion/user"
+	"github.com/hobbyfarm/gargantua/v3/services/conversionsvc/internal/validation"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 )
 

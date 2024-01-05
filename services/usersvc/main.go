@@ -13,8 +13,8 @@ import (
 	"github.com/hobbyfarm/gargantua/v3/pkg/util"
 
 	"github.com/golang/glog"
-	userservice "github.com/hobbyfarm/gargantua/services/usersvc/v3/internal"
 	hfInformers "github.com/hobbyfarm/gargantua/v3/pkg/client/informers/externalversions"
+	userservice "github.com/hobbyfarm/gargantua/v3/services/usersvc/internal"
 
 	"github.com/hobbyfarm/gargantua/v3/protos/authn"
 	"github.com/hobbyfarm/gargantua/v3/protos/authr"

@@ -6,7 +6,7 @@ import (
 	"github.com/hobbyfarm/gargantua/v3/pkg/microservices"
 
 	"github.com/golang/glog"
-	authnservice "github.com/hobbyfarm/gargantua/services/authnsvc/v3/internal"
+	authnservice "github.com/hobbyfarm/gargantua/v3/services/authnsvc/internal"
 
 	"github.com/hobbyfarm/gargantua/v3/protos/accesscode"
 	"github.com/hobbyfarm/gargantua/v3/protos/authn"
